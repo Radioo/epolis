@@ -15,8 +15,10 @@ file(GLOB_RECURSE sources src/*.cpp)
 
 add_executable(epolis ${sources})
 target_include_directories(epolis PRIVATE src)
-target_link_libraries(epolis PRIVATE wx::core)
+target_link_libraries(epolis PRIVATE wx::core csv)
 
 if(UNIX)
-    target_link_libraries(epolis PRIVATE X11)
+    target_link_libraries(epolis PRIVATE X11 gcov)
 endif()
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/text.csv DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
