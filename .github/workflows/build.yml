@@ -22,9 +22,6 @@ jobs:
     - name: Build using CMake
       run: cmake --build build --config Release
 
-    - name: Create ZIP
-      run: 7z a EPOLIS.zip build/bin
-
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
@@ -39,9 +36,6 @@ jobs:
 
     - name: Install GCC
       run: sudo apt-get install gcc -y
-
-    - name: Install GTK3
-      run: sudo apt-get install libgtk-3-dev -y
 
     - name: Run CMake
       run: cmake -S . -B build

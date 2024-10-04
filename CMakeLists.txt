@@ -7,10 +7,10 @@ set(BUILD_SHARED_LIBS OFF)
 set(WITH_FFMPEG OFF)
 
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ --static")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
 
     if(${MINGW})
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows --static")
     endif()
 endif()
 
