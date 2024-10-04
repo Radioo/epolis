@@ -26,7 +26,7 @@ jobs:
       run: 7z a EPOLIS.zip build/bin
 
     - name: Upload ZIP
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: EPOLIS
         path: EPOLIS.zip
@@ -50,7 +50,7 @@ jobs:
       run: zip -r EPOLIS.zip build/bin
 
     - name: Upload ZIP
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: EPOLIS
         path: EPOLIS.zip
