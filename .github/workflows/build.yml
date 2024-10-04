@@ -1,0 +1,25 @@
+name: Multi-platform CMake build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  mingw:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Mingw on Windows
+      run: |
+        choco install mingw -y
+
+    - name: Build with Mingw
+      run: |
+        mkdir build
+        cd build
+        cmake -G "MinGW Makefiles" ..
+        cmake --build .
