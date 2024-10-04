@@ -28,7 +28,7 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
-        name: EPOLIS
+        name: EPOLIS-windows
         path: build/bin
 
   gcc:
@@ -52,5 +52,5 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
-        name: EPOLIS
+        name: EPOLIS-linux
         path: build/bin
