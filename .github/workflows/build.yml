@@ -14,12 +14,43 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Install Mingw on Windows
-      run: |
-        choco install mingw -y
+      run: choco install mingw -y
 
-    - name: Build with Mingw
-      run: |
-        mkdir build
-        cd build
-        cmake -G "MinGW Makefiles" ..
-        cmake --build .
+    - name: Run CMake
+      run: cmake -G "MinGW Makefiles" -S . -B build
+
+    - name: Build using CMake
+      run: cmake --build build --config Release
+
+    - name: Create ZIP
+      run: 7z a EPOLIS.zip build/bin
+
+    - name: Upload ZIP
+      uses: actions/upload-artifact@v2
+      with:
+        name: EPOLIS
+        path: EPOLIS.zip
+
+  gcc:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install GCC on Ubuntu
+      run: sudo apt-get install gcc -y
+
+    - name: Run CMake
+      run: cmake -S . -B build
+
+    - name: Build using CMake
+      run: cmake --build build --config Release
+
+    - name: Create ZIP
+      run: zip -r EPOLIS.zip build/bin
+
+    - name: Upload ZIP
+      uses: actions/upload-artifact@v2
+      with:
+        name: EPOLIS
+        path: EPOLIS.zip
