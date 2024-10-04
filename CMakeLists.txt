@@ -4,6 +4,15 @@ PROJECT(epolis)
 set(CMAKE_CXX_STANDARD 20)
 set(wxBUILD_SHARED OFF)
 set(BUILD_SHARED_LIBS OFF)
+set(WITH_FFMPEG OFF)
+
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ --static")
+
+    if(${MINGW})
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
+    endif()
+endif()
 
 if(${MSVC})
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ENTRY:WinMainCRTStartup")
@@ -24,10 +33,10 @@ target_include_directories(epolis PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
         ${csv-parser_SOURCE_DIR}/single_include
 )
-target_link_libraries(epolis PRIVATE gcov wx::core opencv_core opencv_imgproc opencv_imgcodecs)
+target_link_libraries(epolis PRIVATE wx::core opencv_core opencv_imgproc opencv_imgcodecs)
 
 if(UNIX)
-    target_link_libraries(epolis PRIVATE X11 gcov)
+    target_link_libraries(epolis PRIVATE X11)
 endif()
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/text.csv DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin)
