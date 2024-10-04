@@ -78,7 +78,7 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     auto* dialog = new wxFileDialog(
         this,
         "Select an image",
-        std::filesystem::current_path().string(),
+        (std::filesystem::current_path() / "input").string(),
         "",
         "Supported formats (*.png)|*.png",
         wxFD_OPEN | wxFD_FILE_MUST_EXIST

@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install Mingw on Windows
+    - name: Install Mingw
       run: choco install mingw -y
 
     - name: Run CMake
@@ -25,11 +25,11 @@ jobs:
     - name: Create ZIP
       run: 7z a EPOLIS.zip build/bin
 
-    - name: Upload ZIP
+    - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: EPOLIS
-        path: EPOLIS.zip
+        path: build/bin
 
   gcc:
     runs-on: ubuntu-latest
@@ -37,8 +37,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install GCC on Ubuntu
+    - name: Install GCC
       run: sudo apt-get install gcc -y
+
+    - name: Install GTK3
+      run: sudo apt-get install libgtk-3-dev -y
 
     - name: Run CMake
       run: cmake -S . -B build
@@ -46,11 +49,8 @@ jobs:
     - name: Build using CMake
       run: cmake --build build --config Release
 
-    - name: Create ZIP
-      run: zip -r EPOLIS.zip build/bin
-
-    - name: Upload ZIP
+    - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: EPOLIS
-        path: EPOLIS.zip
+        path: build/bin
