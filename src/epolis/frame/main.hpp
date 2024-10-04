@@ -17,7 +17,12 @@ namespace epolis::frame {
             load_image_2 = 3,
         };
 
+        wxStaticBitmap* image_input_1;
+        wxStaticBitmap* image_input_2;
+
         void on_change_language(const wxCommandEvent& event);
         void on_load_image(const wxCommandEvent& event);
+
+        static wxBitmap get_empty_bitmap() ;
     };
 }

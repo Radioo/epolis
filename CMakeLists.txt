@@ -18,10 +18,13 @@ add_executable(epolis ${sources})
 target_include_directories(epolis PRIVATE
         src
         ${opencv_SOURCE_DIR}/include
+        ${opencv_SOURCE_DIR}/modules/core/include
         ${opencv_SOURCE_DIR}/modules/imgproc/include
+        ${opencv_SOURCE_DIR}/modules/imgcodecs/include
+        ${CMAKE_CURRENT_BINARY_DIR}
         ${csv-parser_SOURCE_DIR}/single_include
 )
-target_link_libraries(epolis PRIVATE gcov wx::core opencv_core opencv_imgproc)
+target_link_libraries(epolis PRIVATE gcov wx::core opencv_core opencv_imgproc opencv_imgcodecs)
 
 if(UNIX)
     target_link_libraries(epolis PRIVATE X11 gcov)
