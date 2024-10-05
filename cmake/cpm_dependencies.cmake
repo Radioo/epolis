@@ -1,7 +1,5 @@
-if(NOT UNIX)
-    CPMAddPackage("gh:wxWidgets/wxWidgets@3.2.6")
-    CPMAddPackage("gh:opencv/opencv#4.10.0")
-endif()
+CPMAddPackage("gh:wxWidgets/wxWidgets@3.2.6")
+CPMAddPackage("gh:opencv/opencv#4.10.0")
 
 CPMAddPackage(
         NAME csv-parser
