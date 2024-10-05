@@ -25,7 +25,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: EPOLIS-windows
-        path: |
-          build/epolis.exe
-          build/text.csv
-          build/input
+        path: build/bin
