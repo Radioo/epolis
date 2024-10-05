@@ -1,3 +1,7 @@
 source,en,pl
 Load Image 1,Load Image 1,Wczytaj Obraz 1
 Load Image 2,Load Image 2,Wczytaj Obraz 2
+Erosion,Erosion,Erozja
+Dilatation,Dilatation,Dylatacja
+Opening,Opening,Otwarcie
+Closing,Closing,Zamkniecie
