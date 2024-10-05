@@ -1,3 +1,12 @@
+# Dependencies
+- wxWidgets
+- OpenCV
+
+## Linux
+```bash
+sudo apt install libgtk-3-dev libwxgtk3.2-dev libopencv-dev
+```
+
 # Reloading translations
 You may wish to reload translations while developing. To do so, either:
 - Rerun CMake
