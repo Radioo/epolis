@@ -44,7 +44,16 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     auto* test_button = new wxButton(this, wxID_ANY, "Test");
 
+    auto* erosion_button = new wxButton(this, wxID_ANY, "Erosion");
+    auto* dilatation_button = new wxButton(this, wxID_ANY, "Dilatation");
+    auto* opening_button = new wxButton(this, wxID_ANY, "Opening");
+    auto* closing_button = new wxButton(this, wxID_ANY, "Closing");
+
     operations_sizer->Add(test_button, 0, wxALL, 5);
+    operations_sizer->Add(erosion_button, 0, wxALL, 5);
+    operations_sizer->Add(dilatation_button, 0, wxALL, 5);
+    operations_sizer->Add(opening_button, 0, wxALL, 5);
+    operations_sizer->Add(closing_button, 0, wxALL, 5);
 
     auto* output_sizer = new wxBoxSizer(wxVERTICAL);
 
