@@ -1,5 +1,4 @@
-name: Multi-platform CMake build
-
+name: Build project for Windows
 on:
   push:
     branches: [ "master" ]
@@ -28,31 +27,5 @@ jobs:
         name: EPOLIS-windows
         path: |
           build/epolis.exe
-          build/text.csv
-          build/input
-  gcc:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Install GCC
-      run: sudo apt-get install gcc -y
-
-    - name: Install dependencies
-      run: sudo apt-get install libgtk-3-dev libwxgtk3.2-dev libopencv-dev -y
-
-    - name: Run CMake
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-
-    - name: Build using CMake
-      run: cmake --build build
-
-    - name: Upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: EPOLIS-linux
-        path: |
-          build/epolis
           build/text.csv
           build/input
