@@ -15,6 +15,10 @@ namespace epolis::frame {
             language = 1,
             load_image_1 = 2,
             load_image_2 = 3,
+            erosion = 4,
+            dilatation = 5,
+            opening = 6,
+            closing = 7,
         };
 
         wxStaticBitmap* image_input_1;
@@ -22,6 +26,10 @@ namespace epolis::frame {
 
         void on_change_language(const wxCommandEvent& event);
         void on_load_image(const wxCommandEvent& event);
+        void on_erosion(const wxCommandEvent& event);
+        void on_dilatation(const wxCommandEvent& event);
+        void on_opening(const wxCommandEvent& event);
+        void on_closing(const wxCommandEvent& event);
 
         static wxBitmap get_empty_bitmap() ;
     };

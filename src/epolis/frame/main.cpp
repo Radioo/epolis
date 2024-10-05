@@ -44,7 +44,24 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     auto* test_button = new wxButton(this, wxID_ANY, "Test");
 
+    auto* erosion_button = new wxButton(this, static_cast<int>(menu_item::erosion), "Erosion");
+    add_button(erosion_button);
+    Bind(wxEVT_BUTTON, &main::on_erosion, this, static_cast<int>(menu_item::erosion));
+    auto* dilatation_button = new wxButton(this, static_cast<int>(menu_item::dilatation), "Dilatation");
+    add_button(dilatation_button);
+    Bind(wxEVT_BUTTON, &main::on_dilatation, this, static_cast<int>(menu_item::dilatation));
+    auto* opening_button = new wxButton(this, static_cast<int>(menu_item::opening), "Opening");
+    add_button(opening_button);
+    Bind(wxEVT_BUTTON, &main::on_opening, this, static_cast<int>(menu_item::opening));
+    auto* closing_button = new wxButton(this, static_cast<int>(menu_item::closing), "Closing");
+    add_button(closing_button);
+    Bind(wxEVT_BUTTON, &main::on_closing, this, static_cast<int>(menu_item::closing));
+
     operations_sizer->Add(test_button, 0, wxALL, 5);
+    operations_sizer->Add(erosion_button, 0, wxALL, 5);
+    operations_sizer->Add(dilatation_button, 0, wxALL, 5);
+    operations_sizer->Add(opening_button, 0, wxALL, 5);
+    operations_sizer->Add(closing_button, 0, wxALL, 5);
 
     auto* output_sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -102,6 +119,19 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
 
     Layout();
 }
+
+void epolis::frame::main::on_erosion(const wxCommandEvent& event) {
+}
+
+void epolis::frame::main::on_dilatation(const wxCommandEvent& event) {
+}
+
+void epolis::frame::main::on_opening(const wxCommandEvent& event) {
+}
+
+void epolis::frame::main::on_closing(const wxCommandEvent& event) {
+}
+
 
 wxBitmap epolis::frame::main::get_empty_bitmap() {
     auto bitmap = wxBitmap(256, 256);
