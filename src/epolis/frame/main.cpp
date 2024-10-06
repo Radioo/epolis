@@ -85,6 +85,7 @@ void epolis::frame::main::on_change_language(const wxCommandEvent& event) {
     const auto lang = static_cast<text::lang>(event.GetSelection());
     text::text::set_language(lang);
     refresh_text();
+    Layout();
 }
 
 void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
