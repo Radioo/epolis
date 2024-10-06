@@ -21,6 +21,9 @@ namespace epolis::frame {
             dilatation = 5,
             opening = 6,
             closing = 7,
+            save_right_image_button = 8,
+            save_left_top_image_button = 9,
+            save_left_bottom_image_button = 10,
         };
 
         enum class image_input : std::uint8_t {
@@ -44,6 +47,9 @@ namespace epolis::frame {
         void on_dilation(const wxCommandEvent& event);
         void on_opening(const wxCommandEvent& event);
         void on_closing(const wxCommandEvent& event);
+        void on_save_right_image_button(const wxCommandEvent& event);
+        void on_save_left_top_image_button(const wxCommandEvent& event);
+        void on_save_left_bottom_image_button(const wxCommandEvent& event);
 
         void select_image(image_input image);
 
