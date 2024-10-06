@@ -34,15 +34,15 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     auto* input_sizer = new wxBoxSizer(wxVERTICAL);
 
-    image_input_1 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    image_input_1 = new wxStaticBitmap(this, static_cast<int>(image_input::image_1), get_empty_bitmap());
+    image_input_1->Bind(wxEVT_LEFT_UP, &main::on_select_image, this, static_cast<int>(image_input::image_1));
     input_sizer->Add(image_input_1, 1, wxEXPAND, 5);
 
-    image_input_2 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    image_input_2 = new wxStaticBitmap(this, static_cast<int>(image_input::image_2), get_empty_bitmap());
+    image_input_2->Bind(wxEVT_LEFT_UP, &main::on_select_image, this, static_cast<int>(image_input::image_2));
     input_sizer->Add(image_input_2, 1, wxEXPAND, 5);
 
     auto* operations_sizer = new wxBoxSizer(wxVERTICAL);
-
-    auto* test_button = new wxButton(this, wxID_ANY, "Test");
 
     auto* erosion_button = new wxButton(this, static_cast<int>(menu_item::erosion), "Erosion");
     add_button(erosion_button);
@@ -57,11 +57,10 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     add_button(closing_button);
     Bind(wxEVT_BUTTON, &main::on_closing, this, static_cast<int>(menu_item::closing));
 
-    operations_sizer->Add(test_button, 0, wxALL, 5);
-    operations_sizer->Add(erosion_button, 0, wxALL, 5);
-    operations_sizer->Add(dilatation_button, 0, wxALL, 5);
-    operations_sizer->Add(opening_button, 0, wxALL, 5);
-    operations_sizer->Add(closing_button, 0, wxALL, 5);
+    operations_sizer->Add(erosion_button, 0, wxALL|wxEXPAND, 5);
+    operations_sizer->Add(dilatation_button, 0, wxALL|wxEXPAND, 5);
+    operations_sizer->Add(opening_button, 0, wxALL|wxEXPAND, 5);
+    operations_sizer->Add(closing_button, 0, wxALL|wxEXPAND, 5);
 
     auto* output_sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -80,6 +79,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     wxTopLevelWindowBase::Layout();
     Centre(wxBOTH);
 
+    select_image(image_input::image_1);
     refresh_text();
 }
 
@@ -106,7 +106,7 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     }
 
     const auto path = dialog->GetPath();
-    auto image = cv::imread(std::string(path), cv::IMREAD_COLOR);
+    const auto image = cv::imread(std::string(path), cv::IMREAD_COLOR);
 
     const wxImage wx_image(image.cols, image.rows, image.data, true);
 
@@ -120,6 +120,12 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     Layout();
 }
 
+void epolis::frame::main::on_select_image(const wxMouseEvent& event) {
+    const auto selected_image = static_cast<image_input>(event.GetId());
+
+    select_image(selected_image);
+}
+
 void epolis::frame::main::on_erosion(const wxCommandEvent& event) {
 }
 
@@ -130,6 +136,23 @@ void epolis::frame::main::on_opening(const wxCommandEvent& event) {
 }
 
 void epolis::frame::main::on_closing(const wxCommandEvent& event) {
+}
+
+void epolis::frame::main::select_image(image_input image) {
+    const static auto color = wxSystemSettings::GetColour(wxSYS_COLOUR_ACTIVECAPTION);
+
+    if(image == image_input::image_1) {
+        selected_input = image_input_1;
+        image_input_1->SetBackgroundColour(color);
+        image_input_2->SetBackgroundColour(wxNullColour);
+    }
+    else if(image == image_input::image_2) {
+        selected_input = image_input_2;
+        image_input_2->SetBackgroundColour(color);
+        image_input_1->SetBackgroundColour(wxNullColour);
+    }
+
+    Layout();
 }
 
 
