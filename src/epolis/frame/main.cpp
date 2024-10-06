@@ -62,9 +62,24 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     auto* output_sizer = new wxBoxSizer(wxVERTICAL);
 
+    auto* save_right_image_button = new wxButton(this, static_cast<int>(menu_item::save_right_image_button), "Save right image");
+    add_button(save_right_image_button);
+    Bind(wxEVT_BUTTON, &main::on_save_right_image_button, this, static_cast<int>(menu_item::save_right_image_button));
+
+    auto* copy_right_image_to_left_top_button = new wxButton(this, static_cast<int>(menu_item::copy_right_image_to_left_top_button), "Copy to left top image");
+    add_button(copy_right_image_to_left_top_button);
+    Bind(wxEVT_BUTTON, &main::on_copy_right_image_to_left_top_button, this, static_cast<int>(menu_item::copy_right_image_to_left_top_button));
+
+    auto* copy_right_image_to_left_bottom_button = new wxButton(this, static_cast<int>(menu_item::copy_right_image_to_left_bottom_button), "Copy to left bottom image");
+    add_button(copy_right_image_to_left_bottom_button);
+    Bind(wxEVT_BUTTON, &main::on_copy_right_image_to_left_bottom_button, this, static_cast<int>(menu_item::copy_right_image_to_left_bottom_button));
+
     image_output = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
 
     output_sizer->Add(image_output, 1, wxEXPAND, 5);
+    output_sizer->Add(save_right_image_button, 0, wxALIGN_CENTER | wxALL, 5);
+    output_sizer->Add(copy_right_image_to_left_top_button, 0, wxALIGN_CENTER | wxALL, 5);
+    output_sizer->Add(copy_right_image_to_left_bottom_button, 0, wxALIGN_CENTER | wxALL, 5);
 
     main_sizer->Add(input_sizer, 1, wxEXPAND, 5);
     main_sizer->Add(operations_sizer, 0, wxEXPAND, 5);
@@ -200,6 +215,62 @@ void epolis::frame::main::on_closing(const wxCommandEvent& event) {
     morphologyEx(source, destination, morph_operation, element);
 
     image_output->SetBitmap(mat_to_bitmap(destination));
+    Layout();
+}
+
+void epolis::frame::main::on_save_right_image_button(const wxCommandEvent& event) {
+    wxFileDialog saveFileDialog(this, "Save Image",
+                                (std::filesystem::current_path() / "output").string(),
+                                "",
+                                "Supported formats (*.png)|*.png",
+                                wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+    if (saveFileDialog.ShowModal() == wxID_CANCEL) {
+        return;
+    }
+
+    wxString filePath = saveFileDialog.GetPath();
+
+    if (!filePath.Lower().EndsWith(".png")) {
+        filePath += ".png";
+    }
+
+    wxBitmap bitmap = image_output->GetBitmap();
+
+    if (!bitmap.IsOk()) {
+        wxMessageBox("Failed to get image from wxStaticBitmap", "Error", wxICON_ERROR);
+        return;
+    }
+
+    wxImage image = bitmap.ConvertToImage();
+
+    if (!image.IsOk()) {
+        wxMessageBox("Invalid image", "Error", wxICON_ERROR);
+        return;
+    }
+
+    int width = image.GetWidth();
+    int height = image.GetHeight();
+
+    cv::Mat mat_image(height, width, CV_8UC3, image.GetData());
+
+    cv::cvtColor(mat_image, mat_image, cv::COLOR_RGB2BGR);
+
+    if (cv::imwrite(std::string(filePath.mb_str()), mat_image)) {
+        wxMessageBox("Image saved successfully", "Success", wxICON_INFORMATION);
+    } else {
+        wxMessageBox("Failed to save image", "Error", wxICON_ERROR);
+    }
+}
+
+void epolis::frame::main::on_copy_right_image_to_left_top_button(const wxCommandEvent& event) {
+    wxBitmap outputBitmap = image_output->GetBitmap();
+    image_input_1->SetBitmap(outputBitmap);
+    Layout();
+}
+void epolis::frame::main::on_copy_right_image_to_left_bottom_button(const wxCommandEvent& event) {
+    wxBitmap outputBitmap = image_output->GetBitmap();
+    image_input_2->SetBitmap(outputBitmap);
     Layout();
 }
 
