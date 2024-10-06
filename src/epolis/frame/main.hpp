@@ -21,16 +21,25 @@ namespace epolis::frame {
             closing = 7,
         };
 
+        enum class image_input : std::uint8_t {
+            image_1 = 1,
+            image_2 = 2,
+        };
+
+        wxStaticBitmap* selected_input = nullptr;
         wxStaticBitmap* image_input_1;
         wxStaticBitmap* image_input_2;
 
+        static wxBitmap get_empty_bitmap();
+
         void on_change_language(const wxCommandEvent& event);
         void on_load_image(const wxCommandEvent& event);
+        void on_select_image(const wxMouseEvent& event);
         void on_erosion(const wxCommandEvent& event);
         void on_dilatation(const wxCommandEvent& event);
         void on_opening(const wxCommandEvent& event);
         void on_closing(const wxCommandEvent& event);
 
-        static wxBitmap get_empty_bitmap() ;
+        void select_image(image_input image);
     };
 }
