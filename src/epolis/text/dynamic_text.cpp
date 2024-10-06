@@ -3,7 +3,7 @@
 
 void epolis::text::dynamic_text::refresh_text() {
     for(const auto& [button, text] : buttons) {
-        button->SetLabel(text::text::translate(text));
+        button->SetLabel(wxString::FromUTF8(text::translate(text)));
     }
 }
 

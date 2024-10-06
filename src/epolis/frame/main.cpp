@@ -1,6 +1,4 @@
 #include <filesystem>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/imgcodecs.hpp>
 
 #include "epolis/frame/main.hpp"
 #include "epolis/text/text.hpp"
@@ -49,7 +47,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     Bind(wxEVT_BUTTON, &main::on_erosion, this, static_cast<int>(menu_item::erosion));
     auto* dilatation_button = new wxButton(this, static_cast<int>(menu_item::dilatation), "Dilatation");
     add_button(dilatation_button);
-    Bind(wxEVT_BUTTON, &main::on_dilatation, this, static_cast<int>(menu_item::dilatation));
+    Bind(wxEVT_BUTTON, &main::on_dilation, this, static_cast<int>(menu_item::dilatation));
     auto* opening_button = new wxButton(this, static_cast<int>(menu_item::opening), "Opening");
     add_button(opening_button);
     Bind(wxEVT_BUTTON, &main::on_opening, this, static_cast<int>(menu_item::opening));
@@ -64,7 +62,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     auto* output_sizer = new wxBoxSizer(wxVERTICAL);
 
-    auto* image_output = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    image_output = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
 
     output_sizer->Add(image_output, 1, wxEXPAND, 5);
 
@@ -106,7 +104,7 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     }
 
     const auto path = dialog->GetPath();
-    const auto image = cv::imread(std::string(path), cv::IMREAD_COLOR);
+    const auto image = imread(std::string(path), cv::IMREAD_COLOR);
 
     const wxImage wx_image(image.cols, image.rows, image.data, true);
 
@@ -127,15 +125,81 @@ void epolis::frame::main::on_select_image(const wxMouseEvent& event) {
 }
 
 void epolis::frame::main::on_erosion(const wxCommandEvent& event) {
+    constexpr auto erosion_type = cv::MORPH_RECT;
+    constexpr auto erosion_size = 1;
+
+    const cv::Mat source = bitmap_to_mat(selected_input);
+    cv::Mat destination;
+
+    const cv::Mat element = getStructuringElement(
+        erosion_type,
+        cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),
+        cv::Point(erosion_size, erosion_size)
+    );
+
+    erode(source, destination, element);
+
+    image_output->SetBitmap(mat_to_bitmap(destination));
+    Layout();
 }
 
-void epolis::frame::main::on_dilatation(const wxCommandEvent& event) {
+void epolis::frame::main::on_dilation(const wxCommandEvent& event) {
+    constexpr auto dilation_type = cv::MORPH_RECT;
+    constexpr auto dilation_size = 1;
+
+    const cv::Mat source = bitmap_to_mat(selected_input);
+    cv::Mat destination;
+
+    const cv::Mat element = getStructuringElement(
+        dilation_type,
+        cv::Size(2 * dilation_size + 1, 2 * dilation_size + 1),
+        cv::Point(dilation_size, dilation_size)
+    );
+
+    dilate(source, destination, element);
+
+    image_output->SetBitmap(mat_to_bitmap(destination));
+    Layout();
 }
 
 void epolis::frame::main::on_opening(const wxCommandEvent& event) {
+    constexpr auto morph_element = cv::MORPH_RECT;
+    constexpr auto morph_operation = cv::MORPH_OPEN;
+    constexpr auto morph_size = 1;
+
+    const cv::Mat source = bitmap_to_mat(selected_input);
+    cv::Mat destination;
+
+    const cv::Mat element = getStructuringElement(
+        morph_element,
+        cv::Size(2 * morph_size + 1, 2 * morph_size + 1),
+        cv::Point(morph_size, morph_size)
+    );
+
+    morphologyEx(source, destination, morph_operation, element);
+
+    image_output->SetBitmap(mat_to_bitmap(destination));
+    Layout();
 }
 
 void epolis::frame::main::on_closing(const wxCommandEvent& event) {
+    constexpr auto morph_element = cv::MORPH_RECT;
+    constexpr auto morph_operation = cv::MORPH_CLOSE;
+    constexpr auto morph_size = 1;
+
+    const cv::Mat source = bitmap_to_mat(selected_input);
+    cv::Mat destination;
+
+    const cv::Mat element = getStructuringElement(
+        morph_element,
+        cv::Size(2 * morph_size + 1, 2 * morph_size + 1),
+        cv::Point(morph_size, morph_size)
+    );
+
+    morphologyEx(source, destination, morph_operation, element);
+
+    image_output->SetBitmap(mat_to_bitmap(destination));
+    Layout();
 }
 
 void epolis::frame::main::select_image(image_input image) {
@@ -153,6 +217,19 @@ void epolis::frame::main::select_image(image_input image) {
     }
 
     Layout();
+}
+
+cv::Mat epolis::frame::main::bitmap_to_mat(const wxStaticBitmap* image) {
+    const wxBitmap bitmap = image->GetBitmap();
+    const wxImage wx_image = bitmap.ConvertToImage();
+    cv::Mat mat(wx_image.GetHeight(), wx_image.GetWidth(), CV_8UC3, wx_image.GetData());
+    return mat;
+}
+
+wxBitmap epolis::frame::main::mat_to_bitmap(const cv::Mat& image) {
+    const wxImage wx_image(image.cols, image.rows, image.data, true);
+    auto bitmap = wxBitmap(wx_image);
+    return bitmap;
 }
 
 
