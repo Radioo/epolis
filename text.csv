@@ -5,6 +5,6 @@ Erosion,Erosion,Erozja
 Dilatation,Dilatation,Dylatacja
 Opening,Opening,Otwarcie
 Closing,Closing,Zamknięcie
-Save right image,Save right image,Zapisz prawy obraz
-Copy to left top image,Copy to left top image,Kopiuj do górnego obrazu
-Copy to left bottom image,Copy to left bottom image,Kopiuj do dolnego obrazu
+Save right image,Save image,Zapisz obraz
+Copy to left top image,Copy to top image,Kopiuj do górnego obrazu
+Copy to left bottom image,Copy to bottom image,Kopiuj do dolnego obrazu
