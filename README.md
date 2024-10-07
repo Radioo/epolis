@@ -4,7 +4,7 @@
 
 ## Linux
 ```bash
-sudo apt install libgtk-3-dev libwxgtk3.2-dev libopencv-dev
+sudo apt install libgtk-3-dev
 ```
 
 # Reloading translations
