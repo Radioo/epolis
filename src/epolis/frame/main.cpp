@@ -61,6 +61,9 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     auto* closing_button = new wxButton(this, static_cast<int>(menu_item::closing), "Closing");
     add_button(closing_button);
     Bind(wxEVT_BUTTON, &main::on_closing, this, static_cast<int>(menu_item::closing));
+    auto* fill_holes_button = new wxButton(this, static_cast<int>(menu_item::fill_holes), "Fill Holes");
+    add_button(fill_holes_button);
+    Bind(wxEVT_BUTTON, &main::on_fill_holes, this, static_cast<int>(menu_item::fill_holes));
 
 
     auto* kernel_slider_vSizer = new wxBoxSizer(wxVERTICAL);
@@ -109,6 +112,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     operations_sizer->Add(dilatation_button, 0, wxALL|wxEXPAND, 5);
     operations_sizer->Add(opening_button, 0, wxALL|wxEXPAND, 5);
     operations_sizer->Add(closing_button, 0, wxALL|wxEXPAND, 5);
+    operations_sizer->Add(fill_holes_button, 0, wxALL|wxEXPAND, 5);
     operations_sizer->Add(kernel_slider_vSizer, 0, wxALL|wxEXPAND, 5);
     operations_sizer->Add(morph_shape_title, 0, wxALL|wxEXPAND, 5);
     operations_sizer->Add(morph_shape_choice, 0, wxALL|wxEXPAND, 5);
@@ -289,6 +293,24 @@ void epolis::frame::main::on_closing(const wxCommandEvent& event) {
     image_output->SetBitmap(mat_to_bitmap(destination));
     Layout();
 }
+void epolis::frame::main::on_fill_holes(const wxCommandEvent &event) {
+    const cv::Mat source = bitmap_to_mat(selected_input);
+    cv::Mat destination,threshold,flood_fill,inv,gray;
+
+    cv::cvtColor(source, gray, cv::COLOR_BGR2GRAY);
+
+    cv::threshold(gray,threshold, 220, 255, cv::THRESH_BINARY);
+    cv::Mat mask = cv::Mat::zeros(threshold.rows + 2, threshold.cols + 2, CV_8UC1);
+    flood_fill = threshold.clone();
+     cv::floodFill(flood_fill,mask, cv::Point(0,0), cv::Scalar(255));
+
+    cv::bitwise_not(flood_fill, inv);
+
+    destination = (threshold | inv);
+
+    image_output->SetBitmap(mat_to_bitmap_greyscale(destination));
+    Layout();
+}
 
 void epolis::frame::main::on_save_right_image_button(const wxCommandEvent& event) {
     wxFileDialog saveFileDialog(this, "Save Image",
@@ -372,6 +394,15 @@ cv::Mat epolis::frame::main::bitmap_to_mat(const wxStaticBitmap* image) {
 
 wxBitmap epolis::frame::main::mat_to_bitmap(const cv::Mat& image) {
     const wxImage wx_image(image.cols, image.rows, image.data, true);
+    auto bitmap = wxBitmap(wx_image);
+    return bitmap;
+}
+
+wxBitmap epolis::frame::main::mat_to_bitmap_greyscale(const cv::Mat& image) {
+    cv::Mat grayscale_rgb;
+
+    cv::cvtColor(image, grayscale_rgb, cv::COLOR_GRAY2BGR);
+    const wxImage wx_image(grayscale_rgb.cols, grayscale_rgb.rows, grayscale_rgb.data, true);
     auto bitmap = wxBitmap(wx_image);
     return bitmap;
 }
