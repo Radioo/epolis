@@ -24,6 +24,8 @@ namespace epolis::frame {
             save_right_image_button = 8,
             copy_right_image_to_left_top_button = 9,
             copy_right_image_to_left_bottom_button = 10,
+            kernel_size_slider = 11,
+            morph_shape = 12,
         };
 
         enum class image_input : std::uint8_t {
@@ -36,10 +38,14 @@ namespace epolis::frame {
         wxStaticBitmap* image_input_2;
         wxStaticBitmap* image_output;
 
+        std::uint8_t kernel_size_value = 1;
+        cv::MorphShapes morph_shape = cv::MORPH_RECT;
+
         static wxBitmap get_empty_bitmap();
         static cv::Mat bitmap_to_mat(const wxStaticBitmap* image);
         static wxBitmap mat_to_bitmap(const cv::Mat& image);
 
+        void on_shape_change(const wxCommandEvent& event);
         void on_change_language(const wxCommandEvent& event);
         void on_load_image(const wxCommandEvent& event);
         void on_select_image(const wxMouseEvent& event);

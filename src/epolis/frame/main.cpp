@@ -13,7 +13,14 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
         "Polish",
     };
 
+    const wxArrayString morph_shapes = {
+        "Rectangle",
+        "Cross",
+        "Ellipse",
+    };
+
     auto* language_choice = new wxChoice(this, static_cast<int>(menu_item::language), wxDefaultPosition, wxDefaultSize, languages, 0);
+    add_choice(language_choice,languages);
     Bind(wxEVT_CHOICE, &main::on_change_language, this, static_cast<int>(menu_item::language));
     language_choice->SetSelection(0);
 
@@ -55,10 +62,58 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     add_button(closing_button);
     Bind(wxEVT_BUTTON, &main::on_closing, this, static_cast<int>(menu_item::closing));
 
+
+    auto* kernel_slider_vSizer = new wxBoxSizer(wxVERTICAL);
+    auto* kernel_slider_hSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    constexpr int kernel_slider_starting_value = 1;
+    constexpr int kernel_slider_minimum_value = 1;
+    constexpr int kernel_slider_maximum_value = 8;
+
+    auto* kernel_slider_title = new wxStaticText(this, wxID_ANY, "Kernel Size");
+    add_static_text(kernel_slider_title);
+    kernel_slider_vSizer->Add(kernel_slider_title, 0, wxALIGN_CENTER);
+
+    auto* kernel_slider_min_value = new wxStaticText(this, wxID_ANY, std::to_string(kernel_slider_minimum_value));
+    kernel_slider_hSizer->Add(kernel_slider_min_value, 0, wxALIGN_LEFT);
+
+    auto* kernel_size_slider = new wxSlider(this, static_cast<int>(menu_item::kernel_size_slider),
+        kernel_slider_starting_value, kernel_slider_minimum_value, kernel_slider_maximum_value);
+    kernel_slider_hSizer->Add(kernel_size_slider, 1, wxEXPAND | wxLEFT | wxRIGHT, 2);
+
+
+    auto* kernel_slider_max_value = new wxStaticText(this, wxID_ANY, std::to_string(kernel_slider_maximum_value));
+    kernel_slider_hSizer->Add(kernel_slider_max_value, 0, wxALIGN_LEFT);
+
+    kernel_slider_vSizer->Add(kernel_slider_hSizer, 0, wxALL|wxEXPAND, 0);
+
+    auto* kernel_slider_current_value = new wxStaticText(this, wxID_ANY, std::to_string(kernel_size_slider->GetValue()));
+    kernel_slider_vSizer->Add(kernel_slider_current_value, 0, wxALIGN_CENTER| wxTOP, 0);
+
+    kernel_size_slider->Bind(wxEVT_SLIDER, [kernel_slider_current_value, this](wxCommandEvent& event) {
+        const int value = event.GetInt();
+        kernel_slider_current_value->SetLabel(wxString::Format("%d", value));
+        kernel_size_value = value;
+    });
+
+
+    auto* morph_shape_title = new wxStaticText(this, wxID_ANY, "Morph shape");
+    add_static_text(morph_shape_title);
+
+    auto* morph_shape_choice = new wxChoice(this, static_cast<int>(menu_item::morph_shape), wxDefaultPosition, wxDefaultSize, morph_shapes, 0);
+    add_choice(morph_shape_choice,morph_shapes);
+    Bind(wxEVT_CHOICE, &main::on_shape_change, this, static_cast<int>(menu_item::morph_shape));
+    morph_shape_choice->SetSelection(0);
+
     operations_sizer->Add(erosion_button, 0, wxALL|wxEXPAND, 5);
     operations_sizer->Add(dilatation_button, 0, wxALL|wxEXPAND, 5);
     operations_sizer->Add(opening_button, 0, wxALL|wxEXPAND, 5);
     operations_sizer->Add(closing_button, 0, wxALL|wxEXPAND, 5);
+    operations_sizer->Add(kernel_slider_vSizer, 0, wxALL|wxEXPAND, 5);
+    operations_sizer->Add(morph_shape_title, 0, wxALL|wxEXPAND, 5);
+    operations_sizer->Add(morph_shape_choice, 0, wxALL|wxEXPAND, 5);
+
+
 
     auto* output_sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -94,6 +149,23 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     select_image(image_input::image_1);
     refresh_text();
+}
+
+void epolis::frame::main::on_shape_change(const wxCommandEvent& event) {
+    switch (event.GetSelection()) {
+        case 0:
+            morph_shape = cv::MORPH_RECT;
+        break;
+        case 1:
+            morph_shape = cv::MORPH_CROSS;
+        break;
+        case 2:
+            morph_shape = cv::MORPH_ELLIPSE;
+        break;
+        default:
+            wxLogWarning("Unknown selection.");
+        break;
+    }
 }
 
 void epolis::frame::main::on_change_language(const wxCommandEvent& event) {
@@ -141,8 +213,8 @@ void epolis::frame::main::on_select_image(const wxMouseEvent& event) {
 }
 
 void epolis::frame::main::on_erosion(const wxCommandEvent& event) {
-    constexpr auto erosion_type = cv::MORPH_RECT;
-    constexpr auto erosion_size = 1;
+    const auto erosion_type = morph_shape;
+    const auto erosion_size = kernel_size_value;
 
     const cv::Mat source = bitmap_to_mat(selected_input);
     cv::Mat destination;
@@ -160,8 +232,8 @@ void epolis::frame::main::on_erosion(const wxCommandEvent& event) {
 }
 
 void epolis::frame::main::on_dilation(const wxCommandEvent& event) {
-    constexpr auto dilation_type = cv::MORPH_RECT;
-    constexpr auto dilation_size = 1;
+    const auto dilation_type = morph_shape;
+    const auto dilation_size = kernel_size_value;
 
     const cv::Mat source = bitmap_to_mat(selected_input);
     cv::Mat destination;
@@ -179,9 +251,9 @@ void epolis::frame::main::on_dilation(const wxCommandEvent& event) {
 }
 
 void epolis::frame::main::on_opening(const wxCommandEvent& event) {
-    constexpr auto morph_element = cv::MORPH_RECT;
+    const auto morph_element = morph_shape;
     constexpr auto morph_operation = cv::MORPH_OPEN;
-    constexpr auto morph_size = 1;
+    const auto morph_size = kernel_size_value;
 
     const cv::Mat source = bitmap_to_mat(selected_input);
     cv::Mat destination;
@@ -199,9 +271,9 @@ void epolis::frame::main::on_opening(const wxCommandEvent& event) {
 }
 
 void epolis::frame::main::on_closing(const wxCommandEvent& event) {
-    constexpr auto morph_element = cv::MORPH_RECT;
+    const auto morph_element = morph_shape;
     constexpr auto morph_operation = cv::MORPH_CLOSE;
-    constexpr auto morph_size = 1;
+    const auto morph_size = kernel_size_value;
 
     const cv::Mat source = bitmap_to_mat(selected_input);
     cv::Mat destination;
