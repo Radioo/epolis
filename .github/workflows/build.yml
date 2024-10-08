@@ -12,6 +12,35 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Checkout WX
+      uses: actions/checkout@v2
+      with:
+        repository: WxWidgets/WxWidgets
+        ref: v3.2.0
+        path: wxWidgets
+        submodules: 'true'
+
+    - name: Cache WX 64-bit
+      id: cache-wx
+      uses: actions/cache@v3
+      with:
+        path: wxWidgets/lib
+        key: wx-3.2-build-lib-${{ runner.os }}-3264bit-static-staticrt-${{ hashFiles('wxWidgets/lib/config.log') }}
+        restore-keys: |
+          wx-3.2-build-lib-${{ runner.os }}-3264bit-static-staticrt-
+
+    - name: Munge WX to use static runtime
+      if: steps.cache-wx.outputs.cache-hit != 'true'
+      run: |
+        python "tonetyrant\src-cpp\msw_build_static.py" wxWidgets\build\msw
+
+    # Builds WX static library
+    - name: Build WX 64-bit
+      if: steps.cache-wx.outputs.cache-hit != 'true'
+      shell: cmd
+      run: |
+        "%MSBUILD_PATH%" "wxWidgets\build\msw\wx_vc17.sln" /Build "Release|x64"
+
     - name: Install Mingw
       run: choco install mingw -y
 
