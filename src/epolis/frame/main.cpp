@@ -187,7 +187,7 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
         "Select an image",
         (std::filesystem::current_path() / "input").string(),
         "",
-        "Supported formats (*.png;*.jpg;*bmp)|*.png;*jpg;*.bmp",
+        "Supported formats (*.png;*.jpg;*bmp;*webp)|*.png;*.jpg;*.bmp;*.webp",
         wxFD_OPEN | wxFD_FILE_MUST_EXIST
     );
 
