@@ -42,5 +42,5 @@ if(UNIX)
     target_link_libraries(epolis PRIVATE X11)
 endif()
 
-file(COPY build/debug-wsl/bin/text.csv DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/text.csv DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/input DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin)
