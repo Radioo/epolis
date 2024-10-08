@@ -93,7 +93,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     auto* kernel_slider_current_value = new wxStaticText(this, wxID_ANY, std::to_string(kernel_size_slider->GetValue()));
     kernel_slider_vSizer->Add(kernel_slider_current_value, 0, wxALIGN_CENTER| wxTOP, 0);
 
-    kernel_size_slider->Bind(wxEVT_SLIDER, [kernel_slider_current_value, this](wxCommandEvent& event) {
+    kernel_size_slider->Bind(wxEVT_SLIDER, [kernel_slider_current_value, this](const wxCommandEvent& event) {
         const int value = event.GetInt();
         kernel_slider_current_value->SetLabel(wxString::Format("%d", value));
         kernel_size_value = value;
@@ -196,7 +196,7 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     }
 
     const auto path = dialog->GetPath();
-    const auto image = imread(std::string(path), cv::IMREAD_COLOR);
+    const auto image = cv::imread(std::string(path), cv::IMREAD_COLOR);
 
     const wxImage wx_image(image.cols, image.rows, image.data, true);
 
@@ -329,28 +329,28 @@ void epolis::frame::main::on_save_right_image_button(const wxCommandEvent& event
         filePath += ".png";
     }
 
-    wxBitmap bitmap = image_output->GetBitmap();
+    const wxBitmap bitmap = image_output->GetBitmap();
 
     if (!bitmap.IsOk()) {
         wxMessageBox("Failed to get image from wxStaticBitmap", "Error", wxICON_ERROR);
         return;
     }
 
-    wxImage image = bitmap.ConvertToImage();
+    const wxImage image = bitmap.ConvertToImage();
 
     if (!image.IsOk()) {
         wxMessageBox("Invalid image", "Error", wxICON_ERROR);
         return;
     }
 
-    int width = image.GetWidth();
-    int height = image.GetHeight();
+    const int width = image.GetWidth();
+    const int height = image.GetHeight();
 
     cv::Mat mat_image(height, width, CV_8UC3, image.GetData());
 
-    cv::cvtColor(mat_image, mat_image, cv::COLOR_RGB2BGR);
+    cvtColor(mat_image, mat_image, cv::COLOR_RGB2BGR);
 
-    if (cv::imwrite(std::string(filePath.mb_str()), mat_image)) {
+    if (imwrite(std::string(filePath.mb_str()), mat_image)) {
         wxMessageBox("Image saved successfully", "Success", wxICON_INFORMATION);
     } else {
         wxMessageBox("Failed to save image", "Error", wxICON_ERROR);
@@ -358,12 +358,12 @@ void epolis::frame::main::on_save_right_image_button(const wxCommandEvent& event
 }
 
 void epolis::frame::main::on_copy_right_image_to_left_top_button(const wxCommandEvent& event) {
-    wxBitmap outputBitmap = image_output->GetBitmap();
+    const wxBitmap outputBitmap = image_output->GetBitmap();
     image_input_1->SetBitmap(outputBitmap);
     Layout();
 }
 void epolis::frame::main::on_copy_right_image_to_left_bottom_button(const wxCommandEvent& event) {
-    wxBitmap outputBitmap = image_output->GetBitmap();
+    const wxBitmap outputBitmap = image_output->GetBitmap();
     image_input_2->SetBitmap(outputBitmap);
     Layout();
 }
@@ -401,12 +401,11 @@ wxBitmap epolis::frame::main::mat_to_bitmap(const cv::Mat& image) {
 wxBitmap epolis::frame::main::mat_to_bitmap_greyscale(const cv::Mat& image) {
     cv::Mat grayscale_rgb;
 
-    cv::cvtColor(image, grayscale_rgb, cv::COLOR_GRAY2BGR);
+    cvtColor(image, grayscale_rgb, cv::COLOR_GRAY2BGR);
     const wxImage wx_image(grayscale_rgb.cols, grayscale_rgb.rows, grayscale_rgb.data, true);
     auto bitmap = wxBitmap(wx_image);
     return bitmap;
 }
-
 
 wxBitmap epolis::frame::main::get_empty_bitmap() {
     auto bitmap = wxBitmap(256, 256);
