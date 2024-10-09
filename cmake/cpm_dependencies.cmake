@@ -1,7 +1,7 @@
-if(NOT SKIP_CPM_WX)
-    CPMAddPackage("gh:wxWidgets/wxWidgets@3.2.6")
-endif()
-CPMAddPackage("gh:opencv/opencv#4.10.0")
+#if(NOT SKIP_CPM_WX)
+#    CPMAddPackage("gh:wxWidgets/wxWidgets@3.2.6")
+#endif()
+#CPMAddPackage("gh:opencv/opencv#4.10.0")
 
 CPMAddPackage(
         NAME csv-parser

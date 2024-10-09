@@ -23,6 +23,8 @@ endif()
 include(cmake/get_cpm.cmake)
 include(cmake/cpm_dependencies.cmake)
 
+find_package(wxWidgets REQUIRED)
+
 file(GLOB_RECURSE sources src/*.cpp)
 
 add_executable(epolis ${sources})
