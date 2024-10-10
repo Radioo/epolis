@@ -3,7 +3,7 @@
 #include "epolis/frame/main.hpp"
 #include "epolis/text/text.hpp"
 
-epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosition, wxSize(1280, 720)) {
+epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosition, wxSize(1280, 720)), timer(this) {
     auto* outer_sizer = new wxBoxSizer(wxVERTICAL);
 
     auto* top_menu_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -67,6 +67,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     auto* clean_borders_button = new wxButton(this, static_cast<int>(menu_item::clear_borders), "Clear borders");
     add_button(fill_holes_button);
     Bind(wxEVT_BUTTON, &main::on_clear_borders, this, static_cast<int>(menu_item::clear_borders));
+    Bind(wxEVT_TIMER, &main::process_on_fill_holes,this);
 
 
     auto* kernel_slider_vSizer = new wxBoxSizer(wxVERTICAL);
@@ -299,25 +300,90 @@ void epolis::frame::main::on_closing(const wxCommandEvent& event) {
 }
 void epolis::frame::main::on_fill_holes(const wxCommandEvent &event) {
     const cv::Mat source = bitmap_to_mat(selected_input);
-    cv::Mat destination,threshold,flood_fill,inv,inv2,gray;
 
-    cv::cvtColor(source, gray, cv::COLOR_BGR2GRAY);
+    step = 0;
 
-    cv::threshold(gray,threshold, 220, 255, cv::THRESH_OTSU);
-    cv::Mat mask = cv::Mat::zeros(threshold.rows + 2, threshold.cols + 2, CV_8UC1);
-    flood_fill = threshold.clone();
-
-    cv::floodFill(flood_fill, mask, cv::Point(0, 0), cv::Scalar(255));
-
-    cv::bitwise_not(flood_fill, inv);
-
-     destination = (threshold | inv);
-
-    image_output->SetBitmap(mat_to_bitmap_greyscale(flood_fill));
-    image_input_2->SetBitmap(mat_to_bitmap_greyscale(inv));
-
-    Layout();
+    timer.Start(1000,wxTIMER_ONE_SHOT);
 }
+
+void epolis::frame::main::process_on_fill_holes(wxTimerEvent &event) {
+     // const cv::Mat source = bitmap_to_mat(selected_input);
+     // cv::Mat threshold,flood_fill,inv,inv2,gray;
+    //
+    // cv::cvtColor(source, gray, cv::COLOR_BGR2GRAY);
+    //
+    // cv::threshold(gray,threshold, 220, 255, cv::THRESH_OTSU);
+    // cv::Mat mask = cv::Mat::zeros(threshold.rows + 2, threshold.cols + 2, CV_8UC1);
+    // flood_fill = threshold.clone();
+    //
+    // cv::floodFill(flood_fill, mask, cv::Point(0, 0), cv::Scalar(255));
+    //
+    // cv::bitwise_not(flood_fill, inv);
+    //
+    // destination = (threshold | inv);
+    //
+    // image_output->SetBitmap(mat_to_bitmap_greyscale(destination));
+    //
+    // Layout();
+
+    switch (step) {
+        case 0: {
+            const cv::Mat source = bitmap_to_mat_grayscale(selected_input);
+            cv::Mat threshold;
+            cv::threshold(source, threshold, 220, 255, cv::THRESH_OTSU);
+
+            image_output->SetBitmap(mat_to_bitmap_greyscale(threshold));
+            Layout();
+
+            step++;
+            break;
+        }
+
+        case 1: {
+            cv::Mat threshold = bitmap_to_mat_grayscale(image_output);
+            cv::Mat flood_fill;
+            cv::Mat mask = cv::Mat::zeros(threshold.rows + 2, threshold.cols + 2, CV_8UC1);
+            flood_fill = threshold.clone();
+            cv::floodFill(flood_fill, mask, cv::Point(0, 0), cv::Scalar(255));
+
+            image_output->SetBitmap(mat_to_bitmap_greyscale(flood_fill));
+            Layout();
+
+            step++;
+            break;
+        }
+
+        case 2: {
+            cv::Mat flood_fill = bitmap_to_mat_grayscale(image_output);
+            cv::Mat inv;
+            cv::bitwise_not(flood_fill, inv);
+
+            image_output->SetBitmap(mat_to_bitmap_greyscale(inv));
+            Layout();
+
+            step++;
+            break;
+        }
+
+        case 3: {
+            cv::Mat inv = bitmap_to_mat_grayscale(image_output);
+            cv::Mat destination;
+            const cv::Mat source = bitmap_to_mat_grayscale(selected_input);
+            cv::Mat threshold;
+            cv::threshold(source, threshold, 220, 255, cv::THRESH_OTSU);
+            destination = (threshold | inv);
+
+            image_output->SetBitmap(mat_to_bitmap_greyscale(destination));
+            Layout();
+
+            timer.Stop();
+            step = 0;
+            return;
+        }
+    }
+    timer.Start(4000,wxTIMER_ONE_SHOT);
+}
+
 
 void epolis::frame::main::on_clear_borders(const wxCommandEvent &event) {
     const cv::Mat source = bitmap_to_mat(selected_input);
@@ -421,6 +487,15 @@ cv::Mat epolis::frame::main::bitmap_to_mat(const wxStaticBitmap* image) {
     cv::Mat mat(wx_image.GetHeight(), wx_image.GetWidth(), CV_8UC3, wx_image.GetData());
     return mat;
 }
+
+cv::Mat epolis::frame::main::bitmap_to_mat_grayscale(const wxStaticBitmap* image) {
+    const wxBitmap bitmap = image->GetBitmap();
+    const wxImage wx_image = bitmap.ConvertToImage();
+    cv::Mat mat(wx_image.GetHeight(), wx_image.GetWidth(), CV_8UC3, wx_image.GetData()), gray;
+    cv::cvtColor(mat, gray, cv::COLOR_BGR2GRAY);
+    return gray;
+}
+
 
 wxBitmap epolis::frame::main::mat_to_bitmap(const cv::Mat& image) {
     const wxImage wx_image(image.cols, image.rows, image.data, true);

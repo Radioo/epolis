@@ -30,6 +30,8 @@ namespace epolis::frame {
             morph_shape = 14,
         };
 
+        int step;
+
         enum class image_input : std::uint8_t {
             image_1 = 1,
             image_2 = 2,
@@ -40,11 +42,14 @@ namespace epolis::frame {
         wxStaticBitmap* image_input_2;
         wxStaticBitmap* image_output;
 
+        wxTimer timer;
+
         std::uint8_t kernel_size_value = 1;
         cv::MorphShapes morph_shape = cv::MORPH_RECT;
 
         static wxBitmap get_empty_bitmap();
         static cv::Mat bitmap_to_mat(const wxStaticBitmap* image);
+        static cv::Mat bitmap_to_mat_grayscale(const wxStaticBitmap *image);
         static wxBitmap mat_to_bitmap(const cv::Mat& image);
         static wxBitmap mat_to_bitmap_greyscale(const cv::Mat &image);
 
@@ -57,6 +62,7 @@ namespace epolis::frame {
         void on_opening(const wxCommandEvent& event);
         void on_closing(const wxCommandEvent& event);
         void on_fill_holes(const wxCommandEvent& event);
+        void process_on_fill_holes(wxTimerEvent &event);
         void on_clear_borders(const wxCommandEvent& event);
         void on_save_right_image_button(const wxCommandEvent& event);
         void on_copy_right_image_to_left_top_button(const wxCommandEvent& event);
