@@ -222,6 +222,8 @@ void epolis::frame::main::on_select_image(const wxMouseEvent& event) {
 }
 
 void epolis::frame::main::on_erosion(const wxCommandEvent& event) {
+    timer.Stop();
+    step = 0;
     const auto erosion_type = morph_shape;
     const auto erosion_size = kernel_size_value;
 
@@ -241,6 +243,8 @@ void epolis::frame::main::on_erosion(const wxCommandEvent& event) {
 }
 
 void epolis::frame::main::on_dilation(const wxCommandEvent& event) {
+    timer.Stop();
+    step = 0;
     const auto dilation_type = morph_shape;
     const auto dilation_size = kernel_size_value;
 
@@ -260,6 +264,8 @@ void epolis::frame::main::on_dilation(const wxCommandEvent& event) {
 }
 
 void epolis::frame::main::on_opening(const wxCommandEvent& event) {
+    timer.Stop();
+    step = 0;
     const auto morph_element = morph_shape;
     constexpr auto morph_operation = cv::MORPH_OPEN;
     const auto morph_size = kernel_size_value;
@@ -280,6 +286,8 @@ void epolis::frame::main::on_opening(const wxCommandEvent& event) {
 }
 
 void epolis::frame::main::on_closing(const wxCommandEvent& event) {
+    timer.Stop();
+    step = 0;
     const auto morph_element = morph_shape;
     constexpr auto morph_operation = cv::MORPH_CLOSE;
     const auto morph_size = kernel_size_value;
@@ -386,6 +394,8 @@ void epolis::frame::main::process_on_fill_holes(wxTimerEvent &event) {
 
 
 void epolis::frame::main::on_clear_borders(const wxCommandEvent &event) {
+    timer.Stop();
+    step = 0;
     const cv::Mat source = bitmap_to_mat(selected_input);
     cv::Mat threshold, gray;
 
