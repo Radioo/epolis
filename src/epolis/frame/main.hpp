@@ -25,8 +25,9 @@ namespace epolis::frame {
             copy_right_image_to_left_top_button = 9,
             copy_right_image_to_left_bottom_button = 10,
             fill_holes = 11,
-            kernel_size_slider = 12,
-            morph_shape = 13,
+            clear_borders = 12,
+            kernel_size_slider = 13,
+            morph_shape = 14,
         };
 
         enum class image_input : std::uint8_t {
@@ -56,6 +57,7 @@ namespace epolis::frame {
         void on_opening(const wxCommandEvent& event);
         void on_closing(const wxCommandEvent& event);
         void on_fill_holes(const wxCommandEvent& event);
+        void on_clear_borders(const wxCommandEvent& event);
         void on_save_right_image_button(const wxCommandEvent& event);
         void on_copy_right_image_to_left_top_button(const wxCommandEvent& event);
         void on_copy_right_image_to_left_bottom_button(const wxCommandEvent& event);

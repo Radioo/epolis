@@ -64,6 +64,9 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     auto* fill_holes_button = new wxButton(this, static_cast<int>(menu_item::fill_holes), "Fill Holes");
     add_button(fill_holes_button);
     Bind(wxEVT_BUTTON, &main::on_fill_holes, this, static_cast<int>(menu_item::fill_holes));
+    auto* clean_borders_button = new wxButton(this, static_cast<int>(menu_item::clear_borders), "Clear borders");
+    add_button(fill_holes_button);
+    Bind(wxEVT_BUTTON, &main::on_clear_borders, this, static_cast<int>(menu_item::clear_borders));
 
 
     auto* kernel_slider_vSizer = new wxBoxSizer(wxVERTICAL);
@@ -112,6 +115,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     operations_sizer->Add(dilatation_button, 0, wxALL|wxEXPAND, 5);
     operations_sizer->Add(opening_button, 0, wxALL|wxEXPAND, 5);
     operations_sizer->Add(closing_button, 0, wxALL|wxEXPAND, 5);
+    operations_sizer->Add(clean_borders_button, 0, wxALL|wxEXPAND, 5);
     operations_sizer->Add(fill_holes_button, 0, wxALL|wxEXPAND, 5);
     operations_sizer->Add(kernel_slider_vSizer, 0, wxALL|wxEXPAND, 5);
     operations_sizer->Add(morph_shape_title, 0, wxALL|wxEXPAND, 5);
@@ -295,20 +299,46 @@ void epolis::frame::main::on_closing(const wxCommandEvent& event) {
 }
 void epolis::frame::main::on_fill_holes(const wxCommandEvent &event) {
     const cv::Mat source = bitmap_to_mat(selected_input);
-    cv::Mat destination,threshold,flood_fill,inv,gray;
+    cv::Mat destination,threshold,flood_fill,inv,inv2,gray;
 
     cv::cvtColor(source, gray, cv::COLOR_BGR2GRAY);
 
-    cv::threshold(gray,threshold, 220, 255, cv::THRESH_BINARY);
+    cv::threshold(gray,threshold, 220, 255, cv::THRESH_OTSU);
     cv::Mat mask = cv::Mat::zeros(threshold.rows + 2, threshold.cols + 2, CV_8UC1);
     flood_fill = threshold.clone();
-     cv::floodFill(flood_fill,mask, cv::Point(0,0), cv::Scalar(255));
+
+    cv::floodFill(flood_fill, mask, cv::Point(0, 0), cv::Scalar(255));
 
     cv::bitwise_not(flood_fill, inv);
 
-    destination = (threshold | inv);
+     destination = (threshold | inv);
 
-    image_output->SetBitmap(mat_to_bitmap_greyscale(destination));
+    image_output->SetBitmap(mat_to_bitmap_greyscale(flood_fill));
+    image_input_2->SetBitmap(mat_to_bitmap_greyscale(inv));
+
+    Layout();
+}
+
+void epolis::frame::main::on_clear_borders(const wxCommandEvent &event) {
+    const cv::Mat source = bitmap_to_mat(selected_input);
+    cv::Mat threshold, gray;
+
+    cv::cvtColor(source, gray, cv::COLOR_BGR2GRAY);
+
+    cv::threshold(gray, threshold, 220, 255, cv::THRESH_OTSU);
+
+    cv::Mat mask = cv::Mat::zeros(threshold.rows + 2, threshold.cols + 2, CV_8UC1);
+    cv::Mat flood_fill = threshold.clone();
+    for (int col = 0; col < flood_fill.cols; ++col) {
+        cv::floodFill(flood_fill, mask, cv::Point(col, 0), cv::Scalar(0));
+        cv::floodFill(flood_fill, mask, cv::Point(col, flood_fill.rows - 1), cv::Scalar(0));
+    }
+    for (int row = 0; row < flood_fill.rows; ++row) {
+        cv::floodFill(flood_fill, mask, cv::Point(0, row), cv::Scalar(0));
+        cv::floodFill(flood_fill, mask, cv::Point(flood_fill.cols - 1, row), cv::Scalar(0));
+    }
+
+    image_output->SetBitmap(mat_to_bitmap_greyscale(flood_fill));
     Layout();
 }
 
