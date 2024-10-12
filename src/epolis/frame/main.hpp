@@ -27,10 +27,8 @@ namespace epolis::frame {
             fill_holes = 11,
             clear_borders = 12,
             kernel_size_slider = 13,
-            morph_shape = 14,
+            operations = 14,
         };
-
-        int step;
 
         enum class image_input : std::uint8_t {
             image_1 = 1,
@@ -45,27 +43,16 @@ namespace epolis::frame {
         wxStaticBitmap* step_image_3;
         wxStaticBitmap* image_output;
 
-        wxTimer timer;
-
-        std::uint8_t kernel_size_value = 1;
-        cv::MorphShapes morph_shape = cv::MORPH_RECT;
-
         static wxBitmap get_empty_bitmap();
         static cv::Mat bitmap_to_mat(const wxStaticBitmap* image);
         static cv::Mat bitmap_to_mat_grayscale(const wxStaticBitmap *image);
         static wxBitmap mat_to_bitmap(const cv::Mat& image);
         static wxBitmap mat_to_bitmap_greyscale(const cv::Mat &image);
 
-        void on_shape_change(const wxCommandEvent& event);
+        void on_fill_holes();
         void on_change_language(const wxCommandEvent& event);
         void on_load_image(const wxCommandEvent& event);
         void on_select_image(const wxMouseEvent& event);
-        void on_erosion(const wxCommandEvent& event);
-        void on_dilation(const wxCommandEvent& event);
-        void on_opening(const wxCommandEvent& event);
-        void on_closing(const wxCommandEvent& event);
-        void on_fill_holes(const wxCommandEvent& event);
-        void process_on_fill_holes(wxTimerEvent &event);
         void on_clear_borders(const wxCommandEvent& event);
         void on_save_image_button(const wxCommandEvent& event);
 

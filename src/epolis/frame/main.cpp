@@ -6,7 +6,7 @@
 
 #include "epolis/text/text.hpp"
 
-epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosition, wxSize(1280, 720)), timer(this) {
+epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosition, wxSize(1280, 720)) {
     auto* outer_sizer = new wxBoxSizer(wxVERTICAL);
 
     auto* top_menu_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -16,18 +16,12 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
         "Polish",
     };
 
-    const wxArrayString morph_shapes = {
-        "Rectangle",
-        "Cross",
-        "Ellipse",
-    };
-
     auto* language_choice = new wxChoice(this, static_cast<int>(menu_item::language), wxDefaultPosition, wxDefaultSize, languages, 0);
     add_choice(language_choice,languages);
     Bind(wxEVT_CHOICE, &main::on_change_language, this, static_cast<int>(menu_item::language));
     language_choice->SetSelection(0);
 
-    auto* load_image_1_button = new wxButton(this, static_cast<int>(menu_item::load_image_1), "Load Image 1");
+    auto* load_image_1_button = new wxButton(this, static_cast<int>(menu_item::load_image_1), "Load Image");
     add_button(load_image_1_button);
     Bind(wxEVT_BUTTON, &main::on_load_image, this, static_cast<int>(menu_item::load_image_1));
 
@@ -68,24 +62,6 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 }
 
 
-
-void epolis::frame::main::on_shape_change(const wxCommandEvent& event) {
-    switch (event.GetSelection()) {
-        case 0:
-            morph_shape = cv::MORPH_RECT;
-        break;
-        case 1:
-            morph_shape = cv::MORPH_CROSS;
-        break;
-        case 2:
-            morph_shape = cv::MORPH_ELLIPSE;
-        break;
-        default:
-            wxLogWarning("Unknown selection.");
-        break;
-    }
-}
-
 void epolis::frame::main::on_change_language(const wxCommandEvent& event) {
     const auto lang = static_cast<text::lang>(event.GetSelection());
     text::text::set_language(lang);
@@ -122,190 +98,49 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     }
 
     Layout();
+    on_fill_holes();
 }
 
-void epolis::frame::main::on_select_image(const wxMouseEvent& event) {
-    const auto selected_image = static_cast<image_input>(event.GetId());
+void epolis::frame::main::on_fill_holes() {
+    const cv::Mat source = bitmap_to_mat(image_input_1);
+    cv::Mat destination,threshold,flood_fill,flood_fill2,inv,inv2,gray,marker;
 
-    select_image(selected_image);
-}
+    cv::cvtColor(source, gray, cv::COLOR_BGR2GRAY);
 
-void epolis::frame::main::on_erosion(const wxCommandEvent& event) {
-    timer.Stop();
-    step = 0;
-    const auto erosion_type = morph_shape;
-    const auto erosion_size = kernel_size_value;
+    cv::threshold(gray,threshold, 128, 255, cv::THRESH_BINARY);
+    cv::bitwise_not(threshold, inv);
 
-    const cv::Mat source = bitmap_to_mat(selected_input);
-    cv::Mat destination;
+    cv::Mat mask = cv::Mat::zeros(inv.rows + 2, inv.cols + 2, CV_8UC1);
+    cv::Mat mask2 = cv::Mat::zeros(inv.rows + 2, inv.cols + 2, CV_8UC1);
+    flood_fill = inv.clone();
+    flood_fill2 = inv.clone();
 
-    const cv::Mat element = getStructuringElement(
-        erosion_type,
-        cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),
-        cv::Point(erosion_size, erosion_size)
-    );
-
-    erode(source, destination, element);
-
-    image_output->SetBitmap(mat_to_bitmap(destination));
-    Layout();
-}
-
-void epolis::frame::main::on_dilation(const wxCommandEvent& event) {
-    timer.Stop();
-    step = 0;
-    const auto dilation_type = morph_shape;
-    const auto dilation_size = kernel_size_value;
-
-    const cv::Mat source = bitmap_to_mat(selected_input);
-    cv::Mat destination;
-
-    const cv::Mat element = getStructuringElement(
-        dilation_type,
-        cv::Size(2 * dilation_size + 1, 2 * dilation_size + 1),
-        cv::Point(dilation_size, dilation_size)
-    );
-
-    dilate(source, destination, element);
-
-    image_output->SetBitmap(mat_to_bitmap(destination));
-    Layout();
-}
-
-void epolis::frame::main::on_opening(const wxCommandEvent& event) {
-    timer.Stop();
-    step = 0;
-    const auto morph_element = morph_shape;
-    constexpr auto morph_operation = cv::MORPH_OPEN;
-    const auto morph_size = kernel_size_value;
-
-    const cv::Mat source = bitmap_to_mat(selected_input);
-    cv::Mat destination;
-
-    const cv::Mat element = getStructuringElement(
-        morph_element,
-        cv::Size(2 * morph_size + 1, 2 * morph_size + 1),
-        cv::Point(morph_size, morph_size)
-    );
-
-    morphologyEx(source, destination, morph_operation, element);
-
-    image_output->SetBitmap(mat_to_bitmap(destination));
-    Layout();
-}
-
-void epolis::frame::main::on_closing(const wxCommandEvent& event) {
-    timer.Stop();
-    step = 0;
-    const auto morph_element = morph_shape;
-    constexpr auto morph_operation = cv::MORPH_CLOSE;
-    const auto morph_size = kernel_size_value;
-
-    const cv::Mat source = bitmap_to_mat(selected_input);
-    cv::Mat destination;
-
-    const cv::Mat element = getStructuringElement(
-        morph_element,
-        cv::Size(2 * morph_size + 1, 2 * morph_size + 1),
-        cv::Point(morph_size, morph_size)
-    );
-
-    morphologyEx(source, destination, morph_operation, element);
-
-    image_output->SetBitmap(mat_to_bitmap(destination));
-    Layout();
-}
-void epolis::frame::main::on_fill_holes(const wxCommandEvent &event) {
-    const cv::Mat source = bitmap_to_mat(selected_input);
-
-    step = 0;
-
-    timer.Start(1000,wxTIMER_ONE_SHOT);
-}
-
-void epolis::frame::main::process_on_fill_holes(wxTimerEvent &event) {
-     // const cv::Mat source = bitmap_to_mat(selected_input);
-     // cv::Mat threshold,flood_fill,inv,inv2,gray;
-    //
-    // cv::cvtColor(source, gray, cv::COLOR_BGR2GRAY);
-    //
-    // cv::threshold(gray,threshold, 220, 255, cv::THRESH_OTSU);
-    // cv::Mat mask = cv::Mat::zeros(threshold.rows + 2, threshold.cols + 2, CV_8UC1);
-    // flood_fill = threshold.clone();
-    //
-    // cv::floodFill(flood_fill, mask, cv::Point(0, 0), cv::Scalar(255));
-    //
-    // cv::bitwise_not(flood_fill, inv);
-    //
-    // destination = (threshold | inv);
-    //
-    // image_output->SetBitmap(mat_to_bitmap_greyscale(destination));
-    //
-    // Layout();
-
-    switch (step) {
-        case 0: {
-            const cv::Mat source = bitmap_to_mat_grayscale(selected_input);
-            cv::Mat threshold;
-            cv::threshold(source, threshold, 220, 255, cv::THRESH_OTSU);
-
-            image_output->SetBitmap(mat_to_bitmap_greyscale(threshold));
-            Layout();
-
-            step++;
-            break;
-        }
-
-        case 1: {
-            cv::Mat threshold = bitmap_to_mat_grayscale(image_output);
-            cv::Mat flood_fill;
-            cv::Mat mask = cv::Mat::zeros(threshold.rows + 2, threshold.cols + 2, CV_8UC1);
-            flood_fill = threshold.clone();
-            cv::floodFill(flood_fill, mask, cv::Point(0, 0), cv::Scalar(255));
-
-            image_output->SetBitmap(mat_to_bitmap_greyscale(flood_fill));
-            Layout();
-
-            step++;
-            break;
-        }
-
-        case 2: {
-            cv::Mat flood_fill = bitmap_to_mat_grayscale(image_output);
-            cv::Mat inv;
-            cv::bitwise_not(flood_fill, inv);
-
-            image_output->SetBitmap(mat_to_bitmap_greyscale(inv));
-            Layout();
-
-            step++;
-            break;
-        }
-
-        case 3: {
-            cv::Mat inv = bitmap_to_mat_grayscale(image_output);
-            cv::Mat destination;
-            const cv::Mat source = bitmap_to_mat_grayscale(selected_input);
-            cv::Mat threshold;
-            cv::threshold(source, threshold, 220, 255, cv::THRESH_OTSU);
-            destination = (threshold | inv);
-
-            image_output->SetBitmap(mat_to_bitmap_greyscale(destination));
-            Layout();
-
-            timer.Stop();
-            step = 0;
-            return;
-        }
+    cv::floodFill(flood_fill2, mask2, cv::Point(0, 0), cv::Scalar(0));
+    for (int col = 0; col < flood_fill.cols; ++col) {
+        cv::floodFill(flood_fill, mask, cv::Point(col, 0), cv::Scalar(0));
+        cv::floodFill(flood_fill, mask, cv::Point(col, flood_fill.rows - 1), cv::Scalar(0));
     }
-    timer.Start(4000,wxTIMER_ONE_SHOT);
-}
+    for (int row = 0; row < flood_fill.rows; ++row) {
+        cv::floodFill(flood_fill, mask, cv::Point(0, row), cv::Scalar(0));
+        cv::floodFill(flood_fill, mask, cv::Point(flood_fill.cols - 1, row), cv::Scalar(0));
+    }
+    cv::bitwise_xor(flood_fill, flood_fill2, marker);
 
+    //cv::bitwise_not(flood_fill, inv);
+
+    destination = (threshold | flood_fill);
+    //destination = threshold;
+    step_image_1->SetBitmap(mat_to_bitmap_greyscale(inv)); //negacja
+    step_image_2->SetBitmap(mat_to_bitmap_greyscale(marker)); //markery
+    step_image_3->SetBitmap(mat_to_bitmap_greyscale(flood_fill)); //czyszczenie brzegu
+    image_output->SetBitmap(mat_to_bitmap_greyscale(destination)); //wynik końcowy
+
+    Layout();
+
+}
 
 void epolis::frame::main::on_clear_borders(const wxCommandEvent &event) {
-    timer.Stop();
-    step = 0;
-    const cv::Mat source = bitmap_to_mat(selected_input);
+    const cv::Mat source = bitmap_to_mat(image_input_1);
     cv::Mat threshold, gray;
 
     cv::cvtColor(source, gray, cv::COLOR_BGR2GRAY);
