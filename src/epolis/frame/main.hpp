@@ -40,6 +40,9 @@ namespace epolis::frame {
         wxStaticBitmap* selected_input = nullptr;
         wxStaticBitmap* image_input_1;
         wxStaticBitmap* image_input_2;
+        wxStaticBitmap* step_image_1;
+        wxStaticBitmap* step_image_2;
+        wxStaticBitmap* step_image_3;
         wxStaticBitmap* image_output;
 
         wxTimer timer;
@@ -64,9 +67,7 @@ namespace epolis::frame {
         void on_fill_holes(const wxCommandEvent& event);
         void process_on_fill_holes(wxTimerEvent &event);
         void on_clear_borders(const wxCommandEvent& event);
-        void on_save_right_image_button(const wxCommandEvent& event);
-        void on_copy_right_image_to_left_top_button(const wxCommandEvent& event);
-        void on_copy_right_image_to_left_bottom_button(const wxCommandEvent& event);
+        void on_save_image_button(const wxCommandEvent& event);
 
         void select_image(image_input image);
 
