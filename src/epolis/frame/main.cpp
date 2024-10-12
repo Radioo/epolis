@@ -1,6 +1,9 @@
 #include <filesystem>
 
 #include "epolis/frame/main.hpp"
+
+#include <wx/wrapsizer.h>
+
 #include "epolis/text/text.hpp"
 
 epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosition, wxSize(1280, 720)) {
@@ -27,133 +30,44 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     auto* load_image_1_button = new wxButton(this, static_cast<int>(menu_item::load_image_1), "Load Image 1");
     add_button(load_image_1_button);
     Bind(wxEVT_BUTTON, &main::on_load_image, this, static_cast<int>(menu_item::load_image_1));
-    auto* load_image_2_button = new wxButton(this, static_cast<int>(menu_item::load_image_2), "Load Image 2");
-    add_button(load_image_2_button);
-    Bind(wxEVT_BUTTON, &main::on_load_image, this, static_cast<int>(menu_item::load_image_2));
+
+    auto* save_image_button = new wxButton(this, static_cast<int>(menu_item::save_right_image_button), "Save image");
+    add_button(save_image_button);
+    Bind(wxEVT_BUTTON, &main::on_save_image_button, this, static_cast<int>(menu_item::save_right_image_button));
 
     top_menu_sizer->Add(language_choice, 0, wxALL, 5);
     top_menu_sizer->Add(load_image_1_button, 0, wxALL, 5);
-    top_menu_sizer->Add(load_image_2_button, 0, wxALL, 5);
-
-    auto* main_sizer = new wxBoxSizer(wxHORIZONTAL);
-
-    auto* input_sizer = new wxBoxSizer(wxVERTICAL);
-
-    image_input_1 = new wxStaticBitmap(this, static_cast<int>(image_input::image_1), get_empty_bitmap());
-    image_input_1->Bind(wxEVT_LEFT_UP, &main::on_select_image, this, static_cast<int>(image_input::image_1));
-    input_sizer->Add(image_input_1, 1, wxEXPAND, 5);
-
-    image_input_2 = new wxStaticBitmap(this, static_cast<int>(image_input::image_2), get_empty_bitmap());
-    image_input_2->Bind(wxEVT_LEFT_UP, &main::on_select_image, this, static_cast<int>(image_input::image_2));
-    input_sizer->Add(image_input_2, 1, wxEXPAND, 5);
-
-    auto* operations_sizer = new wxBoxSizer(wxVERTICAL);
-
-    auto* erosion_button = new wxButton(this, static_cast<int>(menu_item::erosion), "Erosion");
-    add_button(erosion_button);
-    Bind(wxEVT_BUTTON, &main::on_erosion, this, static_cast<int>(menu_item::erosion));
-    auto* dilatation_button = new wxButton(this, static_cast<int>(menu_item::dilatation), "Dilatation");
-    add_button(dilatation_button);
-    Bind(wxEVT_BUTTON, &main::on_dilation, this, static_cast<int>(menu_item::dilatation));
-    auto* opening_button = new wxButton(this, static_cast<int>(menu_item::opening), "Opening");
-    add_button(opening_button);
-    Bind(wxEVT_BUTTON, &main::on_opening, this, static_cast<int>(menu_item::opening));
-    auto* closing_button = new wxButton(this, static_cast<int>(menu_item::closing), "Closing");
-    add_button(closing_button);
-    Bind(wxEVT_BUTTON, &main::on_closing, this, static_cast<int>(menu_item::closing));
-    auto* fill_holes_button = new wxButton(this, static_cast<int>(menu_item::fill_holes), "Fill Holes");
-    add_button(fill_holes_button);
-    Bind(wxEVT_BUTTON, &main::on_fill_holes, this, static_cast<int>(menu_item::fill_holes));
-
-
-    auto* kernel_slider_vSizer = new wxBoxSizer(wxVERTICAL);
-    auto* kernel_slider_hSizer = new wxBoxSizer(wxHORIZONTAL);
-
-    constexpr int kernel_slider_starting_value = 1;
-    constexpr int kernel_slider_minimum_value = 1;
-    constexpr int kernel_slider_maximum_value = 8;
-
-    auto* kernel_slider_title = new wxStaticText(this, wxID_ANY, "Kernel Size");
-    add_static_text(kernel_slider_title);
-    kernel_slider_vSizer->Add(kernel_slider_title, 0, wxALIGN_CENTER);
-
-    auto* kernel_slider_min_value = new wxStaticText(this, wxID_ANY, std::to_string(kernel_slider_minimum_value));
-    kernel_slider_hSizer->Add(kernel_slider_min_value, 0, wxALIGN_LEFT);
-
-    auto* kernel_size_slider = new wxSlider(this, static_cast<int>(menu_item::kernel_size_slider),
-        kernel_slider_starting_value, kernel_slider_minimum_value, kernel_slider_maximum_value);
-    kernel_slider_hSizer->Add(kernel_size_slider, 1, wxEXPAND | wxLEFT | wxRIGHT, 2);
-
-
-    auto* kernel_slider_max_value = new wxStaticText(this, wxID_ANY, std::to_string(kernel_slider_maximum_value));
-    kernel_slider_hSizer->Add(kernel_slider_max_value, 0, wxALIGN_LEFT);
-
-    kernel_slider_vSizer->Add(kernel_slider_hSizer, 0, wxALL|wxEXPAND, 0);
-
-    auto* kernel_slider_current_value = new wxStaticText(this, wxID_ANY, std::to_string(kernel_size_slider->GetValue()));
-    kernel_slider_vSizer->Add(kernel_slider_current_value, 0, wxALIGN_CENTER| wxTOP, 0);
-
-    kernel_size_slider->Bind(wxEVT_SLIDER, [kernel_slider_current_value, this](const wxCommandEvent& event) {
-        const int value = event.GetInt();
-        kernel_slider_current_value->SetLabel(wxString::Format("%d", value));
-        kernel_size_value = value;
-    });
-
-
-    auto* morph_shape_title = new wxStaticText(this, wxID_ANY, "Morph shape");
-    add_static_text(morph_shape_title);
-
-    auto* morph_shape_choice = new wxChoice(this, static_cast<int>(menu_item::morph_shape), wxDefaultPosition, wxDefaultSize, morph_shapes, 0);
-    add_choice(morph_shape_choice,morph_shapes);
-    Bind(wxEVT_CHOICE, &main::on_shape_change, this, static_cast<int>(menu_item::morph_shape));
-    morph_shape_choice->SetSelection(0);
-
-    operations_sizer->Add(erosion_button, 0, wxALL|wxEXPAND, 5);
-    operations_sizer->Add(dilatation_button, 0, wxALL|wxEXPAND, 5);
-    operations_sizer->Add(opening_button, 0, wxALL|wxEXPAND, 5);
-    operations_sizer->Add(closing_button, 0, wxALL|wxEXPAND, 5);
-    operations_sizer->Add(fill_holes_button, 0, wxALL|wxEXPAND, 5);
-    operations_sizer->Add(kernel_slider_vSizer, 0, wxALL|wxEXPAND, 5);
-    operations_sizer->Add(morph_shape_title, 0, wxALL|wxEXPAND, 5);
-    operations_sizer->Add(morph_shape_choice, 0, wxALL|wxEXPAND, 5);
-
-
-
-    auto* output_sizer = new wxBoxSizer(wxVERTICAL);
-
-    auto* save_right_image_button = new wxButton(this, static_cast<int>(menu_item::save_right_image_button), "Save right image");
-    add_button(save_right_image_button);
-    Bind(wxEVT_BUTTON, &main::on_save_right_image_button, this, static_cast<int>(menu_item::save_right_image_button));
-
-    auto* copy_right_image_to_left_top_button = new wxButton(this, static_cast<int>(menu_item::copy_right_image_to_left_top_button), "Copy to left top image");
-    add_button(copy_right_image_to_left_top_button);
-    Bind(wxEVT_BUTTON, &main::on_copy_right_image_to_left_top_button, this, static_cast<int>(menu_item::copy_right_image_to_left_top_button));
-
-    auto* copy_right_image_to_left_bottom_button = new wxButton(this, static_cast<int>(menu_item::copy_right_image_to_left_bottom_button), "Copy to left bottom image");
-    add_button(copy_right_image_to_left_bottom_button);
-    Bind(wxEVT_BUTTON, &main::on_copy_right_image_to_left_bottom_button, this, static_cast<int>(menu_item::copy_right_image_to_left_bottom_button));
-
-    image_output = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
-
-    output_sizer->Add(image_output, 1, wxEXPAND, 5);
-    output_sizer->Add(save_right_image_button, 0, wxALIGN_CENTER | wxALL, 5);
-    output_sizer->Add(copy_right_image_to_left_top_button, 0, wxALIGN_CENTER | wxALL, 5);
-    output_sizer->Add(copy_right_image_to_left_bottom_button, 0, wxALIGN_CENTER | wxALL, 5);
-
-    main_sizer->Add(input_sizer, 1, wxEXPAND, 5);
-    main_sizer->Add(operations_sizer, 0, wxEXPAND, 5);
-    main_sizer->Add(output_sizer, 1, wxEXPAND, 5);
+    top_menu_sizer->AddStretchSpacer(1);
+    top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
 
     outer_sizer->Add(top_menu_sizer, 0, wxEXPAND, 5);
-    outer_sizer->Add(main_sizer, 1, wxEXPAND, 5);
+
+    auto* images_sizer = new wxWrapSizer(wxHORIZONTAL, wxALIGN_CENTER_HORIZONTAL);
+
+    image_input_1 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    images_sizer->Add(image_input_1, 1, wxALL | wxEXPAND, 5);
+
+    step_image_1 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    images_sizer->Add(step_image_1, 1, wxALL | wxEXPAND, 5);
+
+    step_image_2 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    images_sizer->Add(step_image_2, 1, wxALL | wxEXPAND, 5);
+
+    step_image_3 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    images_sizer->Add(step_image_3, 1, wxALL | wxEXPAND, 5);
+
+    image_output = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    images_sizer->Add(image_output, 1, wxALL | wxEXPAND, 5);
+
+    outer_sizer->Add(images_sizer, 1, wxEXPAND, 5);
+
 
     SetSizer(outer_sizer);
     wxTopLevelWindowBase::Layout();
     Centre(wxBOTH);
-
-    select_image(image_input::image_1);
-    refresh_text();
 }
+
+
 
 void epolis::frame::main::on_shape_change(const wxCommandEvent& event) {
     switch (event.GetSelection()) {
@@ -312,7 +226,7 @@ void epolis::frame::main::on_fill_holes(const wxCommandEvent &event) {
     Layout();
 }
 
-void epolis::frame::main::on_save_right_image_button(const wxCommandEvent& event) {
+void epolis::frame::main::on_save_image_button(const wxCommandEvent& event) {
     wxFileDialog saveFileDialog(this, "Save Image",
                                 (std::filesystem::current_path() / "output").string(),
                                 "",
@@ -357,16 +271,6 @@ void epolis::frame::main::on_save_right_image_button(const wxCommandEvent& event
     }
 }
 
-void epolis::frame::main::on_copy_right_image_to_left_top_button(const wxCommandEvent& event) {
-    const wxBitmap outputBitmap = image_output->GetBitmap();
-    image_input_1->SetBitmap(outputBitmap);
-    Layout();
-}
-void epolis::frame::main::on_copy_right_image_to_left_bottom_button(const wxCommandEvent& event) {
-    const wxBitmap outputBitmap = image_output->GetBitmap();
-    image_input_2->SetBitmap(outputBitmap);
-    Layout();
-}
 
 void epolis::frame::main::select_image(image_input image) {
     const static auto color = wxSystemSettings::GetColour(wxSYS_COLOUR_ACTIVECAPTION);
