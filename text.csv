@@ -1,6 +1,12 @@
 source,en,pl
-Load Image 1,Load Image,Wczytaj Obraz
+Load Image,Load Image,Wczytaj Obraz
 Fill Holes,Fill Holes,Wypełnij dziury
 Save image,Save image,Zapisz obraz
 English,English,Angielski
 Polish,Polish,Polski
+Input Image,Input image,Obraz źródłowy
+Step 2,Negation,Negacja
+Step 3,Marker reconstruction,Rekonstrukcja Markerów
+Step 4,Border clearing,Czyszczenie brzegu
+Step 1,Binary Image,Obraz binarny
+Output,Resulting Image,Obraz wynikowy

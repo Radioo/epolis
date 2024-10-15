@@ -41,6 +41,7 @@ namespace epolis::frame {
         wxStaticBitmap* step_image_1;
         wxStaticBitmap* step_image_2;
         wxStaticBitmap* step_image_3;
+        wxStaticBitmap* step_image_4;
         wxStaticBitmap* image_output;
 
         static wxBitmap get_empty_bitmap();
