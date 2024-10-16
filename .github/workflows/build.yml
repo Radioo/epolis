@@ -1,9 +1,6 @@
 name: Build project for Windows
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+  workflow_dispatch:
 
 jobs:
   mingw:
