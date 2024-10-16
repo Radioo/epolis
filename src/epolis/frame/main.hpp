@@ -7,6 +7,8 @@
 
 #include "epolis/text/dynamic_text.hpp"
 
+class wxWrapSizer;
+
 namespace epolis::frame {
     class main final : public wxFrame, public text::dynamic_text {
     public:
@@ -44,6 +46,10 @@ namespace epolis::frame {
         wxStaticBitmap* step_image_4;
         wxStaticBitmap* image_output;
 
+        wxWrapSizer* images_sizer;
+
+        int operation = 0;
+
         static wxBitmap get_empty_bitmap();
         static cv::Mat bitmap_to_mat(const wxStaticBitmap* image);
         static cv::Mat bitmap_to_mat_grayscale(const wxStaticBitmap *image);
@@ -51,7 +57,9 @@ namespace epolis::frame {
         static wxBitmap mat_to_bitmap_greyscale(const cv::Mat &image);
 
         void on_fill_holes();
+        void on_clean_borders();
         void on_change_language(const wxCommandEvent& event);
+        void on_change_operation(const wxCommandEvent& event);
         void on_load_image(const wxCommandEvent& event);
         void on_select_image(const wxMouseEvent& event);
         void on_clear_borders(const wxCommandEvent& event);

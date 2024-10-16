@@ -16,10 +16,20 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
         "Polish",
     };
 
+    const wxArrayString operations = {
+        "Fill holes",
+        "Clean borders",
+    };
+
     auto* language_choice = new wxChoice(this, static_cast<int>(menu_item::language), wxDefaultPosition, wxDefaultSize, languages, 0);
     add_choice(language_choice,languages);
     Bind(wxEVT_CHOICE, &main::on_change_language, this, static_cast<int>(menu_item::language));
     language_choice->SetSelection(0);
+
+    auto* operation_choice = new wxChoice(this, static_cast<int>(menu_item::operations), wxDefaultPosition, wxDefaultSize, operations, 0);
+    add_choice(operation_choice,operations);
+    Bind(wxEVT_CHOICE, &main::on_change_operation, this, static_cast<int>(menu_item::operations));
+    operation_choice->SetSelection(0);
 
     auto* load_image_1_button = new wxButton(this, static_cast<int>(menu_item::load_image_1), "Load Image");
     add_button(load_image_1_button);
@@ -30,19 +40,20 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     Bind(wxEVT_BUTTON, &main::on_save_image_button, this, static_cast<int>(menu_item::save_right_image_button));
 
     top_menu_sizer->Add(language_choice, 0, wxALL, 5);
+    top_menu_sizer->Add(operation_choice, 0, wxALL, 5);
     top_menu_sizer->Add(load_image_1_button, 0, wxALL, 5);
     top_menu_sizer->AddStretchSpacer(1);
     top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
 
     outer_sizer->Add(top_menu_sizer, 0, wxEXPAND, 5);
 
-    auto* images_sizer = new wxWrapSizer(wxHORIZONTAL, wxALIGN_CENTER_HORIZONTAL);
+    images_sizer = new wxWrapSizer(wxHORIZONTAL, wxALIGN_CENTER_HORIZONTAL);
 
     auto* input_image_sizer = new wxBoxSizer(wxVERTICAL);
     auto* step_image_1_sizer = new wxBoxSizer(wxVERTICAL);
     auto* step_image_2_sizer = new wxBoxSizer(wxVERTICAL);
     auto* step_image_3_sizer = new wxBoxSizer(wxVERTICAL);
-    auto* step_image_4_sizer = new wxBoxSizer(wxVERTICAL);
+    //auto* step_image_4_sizer = new wxBoxSizer(wxVERTICAL);
     auto* output_image_sizer = new wxBoxSizer(wxVERTICAL);
 
     auto* input_image_title = new wxStaticText(this, wxID_ANY, "Input Image");
@@ -59,14 +70,14 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     step_image_1_sizer->Add(step_image_1, 0, wxALIGN_CENTER_HORIZONTAL, 5);
     images_sizer->Add(step_image_1_sizer, 1, wxALL | wxEXPAND, 5);
 
-    auto* step_image_2_title = new wxStaticText(this, wxID_ANY, "Step 2");
+    auto* step_image_2_title = new wxStaticText(this, wxID_ANY, "Step 2 Fill");
     add_static_text(step_image_2_title);
     step_image_2 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
     step_image_2_sizer->Add(step_image_2_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
     step_image_2_sizer->Add(step_image_2, 0, wxALIGN_CENTER_HORIZONTAL, 5);
     images_sizer->Add(step_image_2_sizer, 1, wxALL | wxEXPAND, 5);
 
-    auto* step_image_3_title = new wxStaticText(this, wxID_ANY, "Step 3");
+    auto* step_image_3_title = new wxStaticText(this, wxID_ANY, "Step 3 Fill");
     add_static_text(step_image_3_title);
     step_image_3 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
     step_image_3_sizer->Add(step_image_3_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
@@ -74,12 +85,12 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     images_sizer->Add(step_image_3_sizer, 1, wxALL | wxEXPAND, 5);
 
 
-    auto* step_image_4_title = new wxStaticText(this, wxID_ANY, "Step 4");
-    add_static_text(step_image_4_title);
-    step_image_4 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
-    step_image_4_sizer->Add(step_image_4_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    step_image_4_sizer->Add(step_image_4, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(step_image_4_sizer, 1, wxALL | wxEXPAND, 5);
+    // auto* step_image_4_title = new wxStaticText(this, wxID_ANY, "Step 4");
+    // add_static_text(step_image_4_title);
+    // step_image_4 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    // step_image_4_sizer->Add(step_image_4_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    // step_image_4_sizer->Add(step_image_4, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    // images_sizer->Add(step_image_4_sizer, 1, wxALL | wxEXPAND, 5);
 
     auto* image_output_title = new wxStaticText(this, wxID_ANY, "Output");
     add_static_text(image_output_title);
@@ -103,6 +114,108 @@ void epolis::frame::main::on_change_language(const wxCommandEvent& event) {
     text::text::set_language(lang);
     refresh_text();
     Layout();
+}
+
+void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
+    switch (event.GetSelection()) {
+        case 0: {
+            auto* input_image_sizer = new wxBoxSizer(wxVERTICAL);
+            auto* step_image_1_sizer = new wxBoxSizer(wxVERTICAL);
+            auto* step_image_2_sizer = new wxBoxSizer(wxVERTICAL);
+            auto* step_image_3_sizer = new wxBoxSizer(wxVERTICAL);
+            //auto* step_image_4_sizer = new wxBoxSizer(wxVERTICAL);
+            auto* output_image_sizer = new wxBoxSizer(wxVERTICAL);
+            clear_static_text();
+            images_sizer->Clear(true);
+
+            auto* input_image_title = new wxStaticText(this, wxID_ANY, "Input Image");
+    add_static_text(input_image_title);
+    image_input_1 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    input_image_sizer->Add(input_image_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    input_image_sizer->Add(image_input_1, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    images_sizer->Add(input_image_sizer, 1, wxALL | wxEXPAND, 5);
+
+    auto* step_image_1_title = new wxStaticText(this, wxID_ANY, "Step 1");
+    add_static_text(step_image_1_title);
+    step_image_1 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    step_image_1_sizer->Add(step_image_1_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    step_image_1_sizer->Add(step_image_1, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    images_sizer->Add(step_image_1_sizer, 1, wxALL | wxEXPAND, 5);
+
+    auto* step_image_2_title = new wxStaticText(this, wxID_ANY, "Step 2 Fill");
+    add_static_text(step_image_2_title);
+    step_image_2 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    step_image_2_sizer->Add(step_image_2_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    step_image_2_sizer->Add(step_image_2, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    images_sizer->Add(step_image_2_sizer, 1, wxALL | wxEXPAND, 5);
+
+    auto* step_image_3_title = new wxStaticText(this, wxID_ANY, "Step 3 Fill");
+    add_static_text(step_image_3_title);
+    step_image_3 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    step_image_3_sizer->Add(step_image_3_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    step_image_3_sizer->Add(step_image_3, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    images_sizer->Add(step_image_3_sizer, 1, wxALL | wxEXPAND, 5);
+
+
+    // auto* step_image_4_title = new wxStaticText(this, wxID_ANY, "Step 4 Fill");
+    // add_static_text(step_image_4_title);
+    // step_image_4 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    // step_image_4_sizer->Add(step_image_4_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    // step_image_4_sizer->Add(step_image_4, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    // images_sizer->Add(step_image_4_sizer, 1, wxALL | wxEXPAND, 5);
+
+    auto* image_output_title = new wxStaticText(this, wxID_ANY, "Output");
+    add_static_text(image_output_title);
+    image_output = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    output_image_sizer->Add(image_output_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    output_image_sizer->Add(image_output, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    images_sizer->Add(output_image_sizer, 1, wxALL | wxEXPAND, 5);
+            operation = 0;
+            refresh_text();
+            Layout();
+            break;
+        }
+        case 1: {
+            auto* input_image_sizer = new wxBoxSizer(wxVERTICAL);
+            auto* step_image_1_sizer = new wxBoxSizer(wxVERTICAL);
+            auto* step_image_2_sizer = new wxBoxSizer(wxVERTICAL);
+            auto* output_image_sizer = new wxBoxSizer(wxVERTICAL);
+            clear_static_text();
+            images_sizer->Clear(true);
+
+            auto* input_image_title = new wxStaticText(this, wxID_ANY, "Input Image");
+    add_static_text(input_image_title);
+    image_input_1 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    input_image_sizer->Add(input_image_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    input_image_sizer->Add(image_input_1, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    images_sizer->Add(input_image_sizer, 1, wxALL | wxEXPAND, 5);
+
+    auto* step_image_1_title = new wxStaticText(this, wxID_ANY, "Step 1");
+    add_static_text(step_image_1_title);
+    step_image_1 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    step_image_1_sizer->Add(step_image_1_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    step_image_1_sizer->Add(step_image_1, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    images_sizer->Add(step_image_1_sizer, 1, wxALL | wxEXPAND, 5);
+
+    auto* step_image_2_title = new wxStaticText(this, wxID_ANY, "Step 2 Clean");
+    add_static_text(step_image_2_title);
+    step_image_2 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    step_image_2_sizer->Add(step_image_2_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    step_image_2_sizer->Add(step_image_2, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    images_sizer->Add(step_image_2_sizer, 1, wxALL | wxEXPAND, 5);
+
+    auto* image_output_title = new wxStaticText(this, wxID_ANY, "Output");
+    add_static_text(image_output_title);
+    image_output = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
+    output_image_sizer->Add(image_output_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    output_image_sizer->Add(image_output, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    images_sizer->Add(output_image_sizer, 1, wxALL | wxEXPAND, 5);
+            operation = 1;
+            refresh_text();
+            Layout();
+            break;
+        }
+    }
 }
 
 void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
@@ -134,7 +247,12 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     }
 
     Layout();
-    on_fill_holes();
+    if (operation == 0) {
+        on_fill_holes();
+    }
+    else {
+        on_clean_borders();
+    }
 }
 
 void epolis::frame::main::on_fill_holes() {
@@ -178,12 +296,48 @@ void epolis::frame::main::on_fill_holes() {
     //destination = threshold;
     step_image_1->SetBitmap(mat_to_bitmap_greyscale(threshold)); //binaryzacja
     step_image_2->SetBitmap(mat_to_bitmap_greyscale(inv)); //negacja
-    step_image_3->SetBitmap(mat_to_bitmap_greyscale(marker)); //markery
-    step_image_4->SetBitmap(mat_to_bitmap_greyscale(flood_fill)); //czyszczenie brzegu
+    step_image_3->SetBitmap(mat_to_bitmap_greyscale(flood_fill)); //markery
+    //step_image_4->SetBitmap(mat_to_bitmap_greyscale(flood_fill)); //czyszczenie brzegu
     image_output->SetBitmap(mat_to_bitmap_greyscale(destination)); //wynik końcowy
 
     Layout();
 
+}
+
+void epolis::frame::main::on_clean_borders() {
+    const cv::Mat source = bitmap_to_mat(image_input_1);
+    cv::Mat threshold, gray, destination, marker;
+    cv::cvtColor(source, gray, cv::COLOR_BGR2GRAY);
+    cv::threshold(gray, threshold, 220, 255, cv::THRESH_OTSU);
+    cv::Mat mask = cv::Mat::zeros(threshold.rows + 2, threshold.cols + 2, CV_8UC1);
+    cv::Mat flood_fill = threshold.clone();
+    cv::Mat mask2 = cv::Mat::zeros(threshold.rows + 2, threshold.cols + 2, CV_8UC1);
+    cv::Mat flood_fill2 = threshold.clone();
+    for (int col = 0; col < flood_fill2.cols; ++col) {
+        cv::floodFill(flood_fill2, mask2, cv::Point(col, 0), cv::Scalar(0));
+        cv::floodFill(flood_fill2, mask2, cv::Point(col, flood_fill2.rows - 1), cv::Scalar(0));
+    }
+    for (int row = 0; row < flood_fill2.rows; ++row) {
+        cv::floodFill(flood_fill2, mask2, cv::Point(0, row), cv::Scalar(0));
+        cv::floodFill(flood_fill2, mask2, cv::Point(flood_fill2.cols - 1, row), cv::Scalar(0));
+    }
+    for (int col = 0; col < flood_fill.cols; ++col) {
+        cv::floodFill(flood_fill, mask, cv::Point(col, 0), cv::Scalar(0));
+        cv::floodFill(flood_fill, mask, cv::Point(col, flood_fill.rows - 1), cv::Scalar(0));
+    }
+    for (int row = 0; row < flood_fill.rows; ++row) {
+        cv::floodFill(flood_fill, mask, cv::Point(0, row), cv::Scalar(0));
+        cv::floodFill(flood_fill, mask, cv::Point(flood_fill.cols - 1, row), cv::Scalar(0));
+    }
+
+    destination = (threshold | flood_fill);
+    cv::bitwise_or(flood_fill, flood_fill2, marker);
+    cv::bitwise_xor(marker, destination, marker);
+
+    step_image_1->SetBitmap(mat_to_bitmap_greyscale(threshold)); //binaryzacja
+    step_image_2->SetBitmap(mat_to_bitmap_greyscale(marker)); //marker
+    image_output->SetBitmap(mat_to_bitmap_greyscale(flood_fill));
+    Layout();
 }
 
 void epolis::frame::main::on_save_image_button(const wxCommandEvent& event) {
