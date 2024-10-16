@@ -26,6 +26,10 @@ void epolis::text::dynamic_text::add_static_text(wxStaticText* text) {
     static_texts[text] = text->GetLabel();
 }
 
+void epolis::text::dynamic_text::clear_static_text() {
+    static_texts.clear();
+}
+
 void epolis::text::dynamic_text::add_choice(wxChoice* choice, const wxArrayString& values) {
     choices[choice] = values;
 }

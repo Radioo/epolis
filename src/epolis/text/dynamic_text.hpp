@@ -10,6 +10,7 @@ namespace epolis::text {
         void refresh_text();
         void add_button(wxButton* button);
         void add_static_text(wxStaticText *text);
+        void clear_static_text();
 
         void add_choice(wxChoice *choice, const wxArrayString &values);
 
