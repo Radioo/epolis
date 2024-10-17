@@ -18,28 +18,18 @@ namespace epolis::frame {
         enum class menu_item : std::uint8_t {
             language = 1,
             load_image_1 = 2,
-            load_image_2 = 3,
-            erosion = 4,
-            dilatation = 5,
-            opening = 6,
-            closing = 7,
             save_right_image_button = 8,
-            copy_right_image_to_left_top_button = 9,
-            copy_right_image_to_left_bottom_button = 10,
             fill_holes = 11,
             clear_borders = 12,
-            kernel_size_slider = 13,
             operations = 14,
         };
 
-        enum class image_input : std::uint8_t {
-            image_1 = 1,
-            image_2 = 2,
-        };
+        wxPanel* app_panel;
+
+        cv::Mat input_image;
 
         wxStaticBitmap* selected_input = nullptr;
         wxStaticBitmap* image_input_1;
-        wxStaticBitmap* image_input_2;
         wxStaticBitmap* step_image_1;
         wxStaticBitmap* step_image_2;
         wxStaticBitmap* step_image_3;
@@ -64,8 +54,5 @@ namespace epolis::frame {
         void on_select_image(const wxMouseEvent& event);
         void on_clear_borders(const wxCommandEvent& event);
         void on_save_image_button(const wxCommandEvent& event);
-
-        void select_image(image_input image);
-
     };
 }
