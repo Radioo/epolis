@@ -298,7 +298,7 @@ void epolis::frame::main::on_fill_holes() {
     step_image_2->SetBitmap(mat_to_bitmap_greyscale(inv)); //negacja
     step_image_3->SetBitmap(mat_to_bitmap_greyscale(flood_fill)); //markery
     //step_image_4->SetBitmap(mat_to_bitmap_greyscale(flood_fill)); //czyszczenie brzegu
-    image_output->SetBitmap(mat_to_bitmap_greyscale(destination)); //wynik końcowy
+    image_output->SetBitmap(mat_to_bitmap_greyscale(destination)); //wynik koncowy
 
     Layout();
 
