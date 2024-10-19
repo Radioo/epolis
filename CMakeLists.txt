@@ -22,6 +22,10 @@ target_include_directories(epolis PRIVATE
 )
 target_link_libraries(epolis PRIVATE wx::core opencv_core opencv_imgproc opencv_imgcodecs)
 
+if(WIN32)
+    target_sources(epolis PRIVATE epolis.manifest)
+endif()
+
 if(UNIX)
     target_link_libraries(epolis PRIVATE X11)
 endif()
