@@ -3,10 +3,6 @@ PROJECT(epolis)
 
 set(CMAKE_CXX_STANDARD 20)
 
-if(${MSVC})
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ENTRY:WinMainCRTStartup")
-endif()
-
 include(cmake/get_cpm.cmake)
 include(cmake/cpm_dependencies.cmake)
 
@@ -15,7 +11,11 @@ find_package(OpenCV CONFIG REQUIRED)
 
 file(GLOB_RECURSE sources src/*.cpp)
 
-add_executable(epolis ${sources})
+if(WIN32)
+    add_executable(epolis WIN32 ${sources})
+else()
+    add_executable(epolis ${sources})
+endif()
 target_include_directories(epolis PRIVATE
         src
         ${csv-parser_SOURCE_DIR}/single_include
