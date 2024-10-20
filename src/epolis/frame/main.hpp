@@ -2,6 +2,7 @@
 
 #include <wx/wx.h>
 #include <cstdint>
+#include <map>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 
@@ -30,15 +31,14 @@ namespace epolis::frame {
 
         wxStaticBitmap* selected_input = nullptr;
         wxStaticBitmap* image_input_1;
-        wxStaticBitmap* step_image_1;
-        wxStaticBitmap* step_image_2;
-        wxStaticBitmap* step_image_3;
-        wxStaticBitmap* step_image_4;
+        std::vector<wxStaticBitmap*> step_images;
         wxStaticBitmap* image_output;
 
         wxWrapSizer* images_sizer;
 
-        int operation = 0;
+        std::map<wxString, wxArrayString> operations;
+
+        wxString operation;
 
         static wxBitmap get_empty_bitmap();
         static cv::Mat bitmap_to_mat(const wxStaticBitmap* image);
@@ -48,6 +48,7 @@ namespace epolis::frame {
 
         void on_fill_holes();
         void on_clean_borders();
+        wxArrayString get_operation_names();
         void on_change_language(const wxCommandEvent& event);
         void on_change_operation(const wxCommandEvent& event);
         void on_load_image(const wxCommandEvent& event);
