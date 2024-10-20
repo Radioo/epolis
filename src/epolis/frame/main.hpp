@@ -28,6 +28,8 @@ namespace epolis::frame {
         wxPanel* app_panel;
 
         cv::Mat input_image;
+        cv::Mat input_image_binary;
+        cv::Mat marker_animation_frame;
 
         wxStaticBitmap* selected_input = nullptr;
         wxStaticBitmap* image_input_1;
@@ -40,12 +42,17 @@ namespace epolis::frame {
 
         wxString operation;
 
+        wxTimer timer;
+
+        int changed_pixels;
+
         static wxBitmap get_empty_bitmap();
         static cv::Mat bitmap_to_mat(const wxStaticBitmap* image);
         static cv::Mat bitmap_to_mat_grayscale(const wxStaticBitmap *image);
         static wxBitmap mat_to_bitmap(const cv::Mat& image);
         static wxBitmap mat_to_bitmap_greyscale(const cv::Mat &image);
 
+        void animate_marker_reconstruction(wxTimerEvent& event);
         void on_fill_holes();
         void on_clean_borders();
         wxArrayString get_operation_names();

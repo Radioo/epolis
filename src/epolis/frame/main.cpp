@@ -48,6 +48,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     auto* save_image_button = new wxButton(app_panel, static_cast<int>(menu_item::save_right_image_button), "Save image");
     add_button(save_image_button);
     Bind(wxEVT_BUTTON, &main::on_save_image_button, this, static_cast<int>(menu_item::save_right_image_button));
+    Bind(wxEVT_TIMER, &main::animate_marker_reconstruction, this);
 
     top_menu_sizer->Add(language_choice, 0, wxALL, 5);
     top_menu_sizer->Add(operation_choice, 0, wxALL, 5);
@@ -62,6 +63,8 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     outer_sizer->Add(images_sizer, 1, wxEXPAND, 5);
 
     app_panel->SetSizer(outer_sizer);
+
+    timer.SetOwner(this);
 
     Centre(wxBOTH);
 
@@ -83,6 +86,7 @@ void epolis::frame::main::on_change_language(const wxCommandEvent& event) {
 }
 
 void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
+    timer.Stop();
     operation = get_operation_names().Item(event.GetSelection());
 
     clear_static_text();
@@ -188,16 +192,12 @@ void epolis::frame::main::on_fill_holes() {
         cv::floodFill(flood_fill, mask, cv::Point(flood_fill.cols - 1, row), cv::Scalar(0));
     }
 
-    //cv::bitwise_not(flood_fill, inv);
-
     destination = (threshold | flood_fill);
     cv::bitwise_or(flood_fill, flood_fill2, marker);
     cv::bitwise_xor(marker, destination, marker);
-    //destination = threshold;
     step_images.at(0)->SetBitmap(mat_to_bitmap_greyscale(threshold)); //binaryzacja
     step_images.at(1)->SetBitmap(mat_to_bitmap_greyscale(inv)); //negacja
     step_images.at(2)->SetBitmap(mat_to_bitmap_greyscale(flood_fill)); //markery
-    //step_image_4->SetBitmap(mat_to_bitmap_greyscale(flood_fill)); //czyszczenie brzegu
     image_output->SetBitmap(mat_to_bitmap_greyscale(destination)); //wynik koncowy
 
     app_panel->Layout();
@@ -206,40 +206,51 @@ void epolis::frame::main::on_fill_holes() {
 void epolis::frame::main::on_clean_borders() {
     const cv::Mat source = input_image;
 
-    cv::Mat gray, threshold, destination, marker;
+    cv::Mat gray,marker;
+
     cv::cvtColor(source, gray, cv::COLOR_BGR2GRAY);
-    cv::threshold(gray, threshold, 128, 255, cv::ADAPTIVE_THRESH_MEAN_C);
 
-    cv::Mat mask = cv::Mat::zeros(threshold.rows + 2, threshold.cols + 2, CV_8UC1);
-    cv::Mat flood_fill = threshold.clone();
-    cv::Mat mask2 = cv::Mat::zeros(threshold.rows + 2, threshold.cols + 2, CV_8UC1);
-    cv::Mat flood_fill2 = threshold.clone();
+    cv::threshold(gray, input_image_binary, 128, 255, cv::THRESH_OTSU);
 
-    for (int col = 0; col < flood_fill2.cols; ++col) {
-        cv::floodFill(flood_fill2, mask2, cv::Point(col, 0), cv::Scalar(0));
-        cv::floodFill(flood_fill2, mask2, cv::Point(col, flood_fill2.rows - 1), cv::Scalar(0));
-    }
-    for (int row = 0; row < flood_fill2.rows; ++row) {
-        cv::floodFill(flood_fill2, mask2, cv::Point(0, row), cv::Scalar(0));
-        cv::floodFill(flood_fill2, mask2, cv::Point(flood_fill2.cols - 1, row), cv::Scalar(0));
-    }
-    for (int col = 0; col < flood_fill.cols; ++col) {
-        cv::floodFill(flood_fill, mask, cv::Point(col, 0), cv::Scalar(0));
-        cv::floodFill(flood_fill, mask, cv::Point(col, flood_fill.rows - 1), cv::Scalar(0));
-    }
-    for (int row = 0; row < flood_fill.rows; ++row) {
-        cv::floodFill(flood_fill, mask, cv::Point(0, row), cv::Scalar(0));
-        cv::floodFill(flood_fill, mask, cv::Point(flood_fill.cols - 1, row), cv::Scalar(0));
-    }
+    cv::Rect roi(1, 1, input_image_binary.cols - 2, input_image_binary.rows - 2);
 
-    destination = (threshold | flood_fill);
-    cv::bitwise_or(flood_fill, flood_fill2, marker);
-    cv::bitwise_xor(marker, destination, marker);
+    cv::Mat cropped_image = input_image_binary(roi).clone();
+    cv::Mat padded_image;
 
-    step_images.at(0)->SetBitmap(mat_to_bitmap_greyscale(threshold)); // binaryzacja
-    step_images.at(1)->SetBitmap(mat_to_bitmap_greyscale(marker)); // marker
-    image_output->SetBitmap(mat_to_bitmap_greyscale(flood_fill));
+    cv::copyMakeBorder(cropped_image,padded_image, 1, 1, 1, 1, cv::BORDER_CONSTANT, cv::Scalar(0));
+
+    cv::bitwise_xor(input_image_binary, padded_image, marker_animation_frame);
+    step_images.at(1)->SetBitmap(mat_to_bitmap_greyscale(marker_animation_frame));
+
+    step_images.at(0)->SetBitmap(mat_to_bitmap_greyscale(input_image_binary)); // binaryzacja
     app_panel->Layout();
+    timer.Start(175, wxTIMER_CONTINUOUS);
+}
+
+void epolis::frame::main::animate_marker_reconstruction(wxTimerEvent &event) {
+    constexpr auto dilation_type = cv::MORPH_RECT;
+    constexpr auto dilation_size = 1;
+    cv::Mat marker_next_frame,difference;
+    const cv::Mat element = getStructuringElement(
+        dilation_type,
+        cv::Size(2 * dilation_size + 1, 2 * dilation_size + 1),
+        cv::Point(dilation_size, dilation_size)
+    );
+
+    cv::dilate(marker_animation_frame, marker_next_frame, element);
+    cv::bitwise_and(marker_next_frame, input_image_binary, marker_animation_frame);
+    step_images.at(1)->SetBitmap(mat_to_bitmap_greyscale(marker_animation_frame));
+    cv::absdiff(marker_next_frame, marker_animation_frame, difference);
+    int non_zero_count = cv::countNonZero(difference);
+    if (changed_pixels == non_zero_count) {
+        cv::Mat result;
+        cv::bitwise_xor(marker_animation_frame, input_image_binary, result);
+        image_output->SetBitmap(mat_to_bitmap_greyscale(result));
+        timer.Stop();
+    }
+    app_panel->Layout();
+    changed_pixels = non_zero_count;
+
 }
 
 wxArrayString epolis::frame::main::get_operation_names() {
