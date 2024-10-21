@@ -72,8 +72,8 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     event.SetInt(operation_choice->GetSelection());  // Set the selection index
     event.SetString(operation_choice->GetString(operation_choice->GetSelection()));
     on_change_operation(event);
-    refresh_text();
 
+    refresh_text();
     app_panel->Layout();
 }
 
@@ -156,7 +156,7 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
         on_fill_holes();
 
     }
-    app_panel->Layout();
+    // app_panel->Layout();
 }
 
 void epolis::frame::main::on_fill_holes() {
@@ -253,6 +253,7 @@ void epolis::frame::main::animate_marker_reconstruction(wxTimerEvent &event) {
         cv::bitwise_xor(marker_animation_frame, input_image_binary, result);
         image_output->SetBitmap(mat_to_bitmap_greyscale(result));
         timer.Stop();
+        app_panel->Layout();
     }
     changed_pixels = non_zero_count;
 
