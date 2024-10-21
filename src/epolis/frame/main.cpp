@@ -150,7 +150,6 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     image_input_1->SetBitmap(wxBitmap(wx_image));
 
     if (operation == "Clean borders") {
-        image_output->SetBitmap(get_empty_bitmap());
         on_clean_borders();
     }
     else {
