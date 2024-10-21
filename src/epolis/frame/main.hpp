@@ -45,6 +45,7 @@ namespace epolis::frame {
         wxTimer timer;
 
         int changed_pixels;
+        int count = 0;
 
         static wxBitmap get_empty_bitmap();
         static cv::Mat bitmap_to_mat(const wxStaticBitmap* image);

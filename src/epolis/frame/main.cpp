@@ -150,6 +150,7 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     image_input_1->SetBitmap(wxBitmap(wx_image));
 
     if (operation == "Clean borders") {
+        image_output->SetBitmap(get_empty_bitmap());
         on_clean_borders();
     }
     else {
@@ -243,12 +244,17 @@ void epolis::frame::main::animate_marker_reconstruction(wxTimerEvent &event) {
     cv::absdiff(marker_next_frame, marker_animation_frame, difference);
     int non_zero_count = cv::countNonZero(difference);
     if (changed_pixels == non_zero_count) {
+        count++;
+    }
+    else {
+        count = 0;
+    }
+    if (changed_pixels == non_zero_count && count == 3) {
         cv::Mat result;
         cv::bitwise_xor(marker_animation_frame, input_image_binary, result);
         image_output->SetBitmap(mat_to_bitmap_greyscale(result));
         timer.Stop();
     }
-    app_panel->Layout();
     changed_pixels = non_zero_count;
 
 }
