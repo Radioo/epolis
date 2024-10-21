@@ -2,6 +2,7 @@
 
 #include <wx/wx.h>
 #include <cstdint>
+#include <map>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 
@@ -27,18 +28,24 @@ namespace epolis::frame {
         wxPanel* app_panel;
 
         cv::Mat input_image;
+        cv::Mat input_image_binary;
+        cv::Mat marker_animation_frame;
 
         wxStaticBitmap* selected_input = nullptr;
         wxStaticBitmap* image_input_1;
-        wxStaticBitmap* step_image_1;
-        wxStaticBitmap* step_image_2;
-        wxStaticBitmap* step_image_3;
-        wxStaticBitmap* step_image_4;
+        std::vector<wxStaticBitmap*> step_images;
         wxStaticBitmap* image_output;
 
         wxWrapSizer* images_sizer;
 
-        int operation = 0;
+        std::map<wxString, wxArrayString> operations;
+
+        wxString operation;
+
+        wxTimer timer;
+
+        int changed_pixels;
+        int count = 0;
 
         static wxBitmap get_empty_bitmap();
         static cv::Mat bitmap_to_mat(const wxStaticBitmap* image);
@@ -46,8 +53,10 @@ namespace epolis::frame {
         static wxBitmap mat_to_bitmap(const cv::Mat& image);
         static wxBitmap mat_to_bitmap_greyscale(const cv::Mat &image);
 
+        void animate_marker_reconstruction(wxTimerEvent& event);
         void on_fill_holes();
         void on_clean_borders();
+        wxArrayString get_operation_names();
         void on_change_language(const wxCommandEvent& event);
         void on_change_operation(const wxCommandEvent& event);
         void on_load_image(const wxCommandEvent& event);

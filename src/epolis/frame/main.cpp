@@ -18,18 +18,26 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
         "Polish",
     };
 
-    const wxArrayString operations = {
-        "Fill holes",
-        "Clean borders",
+    operations = {
+        {"Fill holes", {
+            "Step 1",
+            "Step 2 Fill",
+            "Step 3 Fill"
+        }},
+        {"Clean borders", {
+            "Step 1",
+            "Step 2 Clean"
+        }}
     };
+
 
     auto* language_choice = new wxChoice(app_panel, static_cast<int>(menu_item::language), wxDefaultPosition, wxDefaultSize, languages, 0);
     add_choice(language_choice,languages);
     Bind(wxEVT_CHOICE, &main::on_change_language, this, static_cast<int>(menu_item::language));
     language_choice->SetSelection(0);
 
-    auto* operation_choice = new wxChoice(app_panel, static_cast<int>(menu_item::operations), wxDefaultPosition, wxDefaultSize, operations, 0);
-    add_choice(operation_choice,operations);
+    auto* operation_choice = new wxChoice(app_panel, static_cast<int>(menu_item::operations), wxDefaultPosition, wxDefaultSize, get_operation_names(), 0);
+    add_choice(operation_choice,get_operation_names());
     Bind(wxEVT_CHOICE, &main::on_change_operation, this, static_cast<int>(menu_item::operations));
     operation_choice->SetSelection(0);
 
@@ -40,6 +48,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     auto* save_image_button = new wxButton(app_panel, static_cast<int>(menu_item::save_right_image_button), "Save image");
     add_button(save_image_button);
     Bind(wxEVT_BUTTON, &main::on_save_image_button, this, static_cast<int>(menu_item::save_right_image_button));
+    Bind(wxEVT_TIMER, &main::animate_marker_reconstruction, this);
 
     top_menu_sizer->Add(language_choice, 0, wxALL, 5);
     top_menu_sizer->Add(operation_choice, 0, wxALL, 5);
@@ -51,63 +60,20 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     images_sizer = new wxWrapSizer(wxHORIZONTAL, wxALIGN_CENTER_HORIZONTAL);
 
-    auto* input_image_sizer = new wxBoxSizer(wxVERTICAL);
-    auto* step_image_1_sizer = new wxBoxSizer(wxVERTICAL);
-    auto* step_image_2_sizer = new wxBoxSizer(wxVERTICAL);
-    auto* step_image_3_sizer = new wxBoxSizer(wxVERTICAL);
-    //auto* step_image_4_sizer = new wxBoxSizer(wxVERTICAL);
-    auto* output_image_sizer = new wxBoxSizer(wxVERTICAL);
-
-    auto* input_image_title = new wxStaticText(app_panel, wxID_ANY, "Input Image");
-    add_static_text(input_image_title);
-    image_input_1 = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
-    input_image_sizer->Add(input_image_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    input_image_sizer->Add(image_input_1, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(input_image_sizer, 1, wxALL | wxEXPAND, 5);
-
-    auto* step_image_1_title = new wxStaticText(app_panel, wxID_ANY, "Step 1");
-    add_static_text(step_image_1_title);
-    step_image_1 = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
-    step_image_1_sizer->Add(step_image_1_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    step_image_1_sizer->Add(step_image_1, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(step_image_1_sizer, 1, wxALL | wxEXPAND, 5);
-
-    auto* step_image_2_title = new wxStaticText(app_panel, wxID_ANY, "Step 2 Fill");
-    add_static_text(step_image_2_title);
-    step_image_2 = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
-    step_image_2_sizer->Add(step_image_2_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    step_image_2_sizer->Add(step_image_2, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(step_image_2_sizer, 1, wxALL | wxEXPAND, 5);
-
-    auto* step_image_3_title = new wxStaticText(app_panel, wxID_ANY, "Step 3 Fill");
-    add_static_text(step_image_3_title);
-    step_image_3 = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
-    step_image_3_sizer->Add(step_image_3_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    step_image_3_sizer->Add(step_image_3, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(step_image_3_sizer, 1, wxALL | wxEXPAND, 5);
-
-
-    // auto* step_image_4_title = new wxStaticText(this, wxID_ANY, "Step 4");
-    // add_static_text(step_image_4_title);
-    // step_image_4 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
-    // step_image_4_sizer->Add(step_image_4_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    // step_image_4_sizer->Add(step_image_4, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    // images_sizer->Add(step_image_4_sizer, 1, wxALL | wxEXPAND, 5);
-
-    auto* image_output_title = new wxStaticText(app_panel, wxID_ANY, "Output");
-    add_static_text(image_output_title);
-    image_output = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
-    output_image_sizer->Add(image_output_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    output_image_sizer->Add(image_output, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(output_image_sizer, 1, wxALL | wxEXPAND, 5);
-
     outer_sizer->Add(images_sizer, 1, wxEXPAND, 5);
 
     app_panel->SetSizer(outer_sizer);
 
-    Centre(wxBOTH);
-    refresh_text();
+    timer.SetOwner(this);
 
+    Centre(wxBOTH);
+
+    wxCommandEvent event(wxEVT_CHOICE, operation_choice->GetId());
+    event.SetInt(operation_choice->GetSelection());  // Set the selection index
+    event.SetString(operation_choice->GetString(operation_choice->GetSelection()));
+    on_change_operation(event);
+
+    refresh_text();
     app_panel->Layout();
 }
 
@@ -120,105 +86,41 @@ void epolis::frame::main::on_change_language(const wxCommandEvent& event) {
 }
 
 void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
-    switch (event.GetSelection()) {
-        case 0: {
-            auto* input_image_sizer = new wxBoxSizer(wxVERTICAL);
-            auto* step_image_1_sizer = new wxBoxSizer(wxVERTICAL);
-            auto* step_image_2_sizer = new wxBoxSizer(wxVERTICAL);
-            auto* step_image_3_sizer = new wxBoxSizer(wxVERTICAL);
-            //auto* step_image_4_sizer = new wxBoxSizer(wxVERTICAL);
-            auto* output_image_sizer = new wxBoxSizer(wxVERTICAL);
-            clear_static_text();
-            images_sizer->Clear(true);
+    timer.Stop();
+    operation = get_operation_names().Item(event.GetSelection());
 
-            auto* input_image_title = new wxStaticText(app_panel, wxID_ANY, "Input Image");
+    clear_static_text();
+    images_sizer->Clear(true);
+    step_images.clear();
+
+    auto* input_image_sizer = new wxBoxSizer(wxVERTICAL);
+    auto* input_image_title = new wxStaticText(app_panel, wxID_ANY, "Input Image");
     add_static_text(input_image_title);
     image_input_1 = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
     input_image_sizer->Add(input_image_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
     input_image_sizer->Add(image_input_1, 0, wxALIGN_CENTER_HORIZONTAL, 5);
     images_sizer->Add(input_image_sizer, 1, wxALL | wxEXPAND, 5);
 
-    auto* step_image_1_title = new wxStaticText(app_panel, wxID_ANY, "Step 1");
-    add_static_text(step_image_1_title);
-    step_image_1 = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
-    step_image_1_sizer->Add(step_image_1_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    step_image_1_sizer->Add(step_image_1, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(step_image_1_sizer, 1, wxALL | wxEXPAND, 5);
-
-    auto* step_image_2_title = new wxStaticText(app_panel, wxID_ANY, "Step 2 Fill");
-    add_static_text(step_image_2_title);
-    step_image_2 = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
-    step_image_2_sizer->Add(step_image_2_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    step_image_2_sizer->Add(step_image_2, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(step_image_2_sizer, 1, wxALL | wxEXPAND, 5);
-
-    auto* step_image_3_title = new wxStaticText(app_panel, wxID_ANY, "Step 3 Fill");
-    add_static_text(step_image_3_title);
-    step_image_3 = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
-    step_image_3_sizer->Add(step_image_3_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    step_image_3_sizer->Add(step_image_3, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(step_image_3_sizer, 1, wxALL | wxEXPAND, 5);
-
-
-    // auto* step_image_4_title = new wxStaticText(this, wxID_ANY, "Step 4 Fill");
-    // add_static_text(step_image_4_title);
-    // step_image_4 = new wxStaticBitmap(this, wxID_ANY, get_empty_bitmap());
-    // step_image_4_sizer->Add(step_image_4_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    // step_image_4_sizer->Add(step_image_4, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    // images_sizer->Add(step_image_4_sizer, 1, wxALL | wxEXPAND, 5);
-
-    auto* image_output_title = new wxStaticText(app_panel, wxID_ANY, "Output");
-    add_static_text(image_output_title);
-    image_output = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
-    output_image_sizer->Add(image_output_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    output_image_sizer->Add(image_output, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(output_image_sizer, 1, wxALL | wxEXPAND, 5);
-            operation = 0;
-            refresh_text();
-            app_panel->Layout();
-            break;
-        }
-        case 1: {
-            auto* input_image_sizer = new wxBoxSizer(wxVERTICAL);
-            auto* step_image_1_sizer = new wxBoxSizer(wxVERTICAL);
-            auto* step_image_2_sizer = new wxBoxSizer(wxVERTICAL);
-            auto* output_image_sizer = new wxBoxSizer(wxVERTICAL);
-            clear_static_text();
-            images_sizer->Clear(true);
-
-            auto* input_image_title = new wxStaticText(app_panel, wxID_ANY, "Input Image");
-    add_static_text(input_image_title);
-    image_input_1 = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
-    input_image_sizer->Add(input_image_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    input_image_sizer->Add(image_input_1, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(input_image_sizer, 1, wxALL | wxEXPAND, 5);
-
-    auto* step_image_1_title = new wxStaticText(app_panel, wxID_ANY, "Step 1");
-    add_static_text(step_image_1_title);
-    step_image_1 = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
-    step_image_1_sizer->Add(step_image_1_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    step_image_1_sizer->Add(step_image_1, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(step_image_1_sizer, 1, wxALL | wxEXPAND, 5);
-
-    auto* step_image_2_title = new wxStaticText(app_panel, wxID_ANY, "Step 2 Clean");
-    add_static_text(step_image_2_title);
-    step_image_2 = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
-    step_image_2_sizer->Add(step_image_2_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    step_image_2_sizer->Add(step_image_2, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(step_image_2_sizer, 1, wxALL | wxEXPAND, 5);
-
-    auto* image_output_title = new wxStaticText(app_panel, wxID_ANY, "Output");
-    add_static_text(image_output_title);
-    image_output = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
-    output_image_sizer->Add(image_output_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    output_image_sizer->Add(image_output, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(output_image_sizer, 1, wxALL | wxEXPAND, 5);
-            operation = 1;
-            refresh_text();
-            app_panel->Layout();
-            break;
-        }
+    for (const auto& step: operations[operation]) {
+        auto* step_image_sizer = new wxBoxSizer(wxVERTICAL);
+        auto* step_image_title = new wxStaticText(app_panel, wxID_ANY, step.ToStdString());
+        add_static_text(step_image_title);
+        step_images.push_back(new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap()));
+        step_image_sizer->Add(step_image_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+        step_image_sizer->Add(step_images.back(), 0, wxALIGN_CENTER_HORIZONTAL, 5);
+        images_sizer->Add(step_image_sizer, 1, wxALL | wxEXPAND, 5);
     }
+
+    auto* output_image_sizer = new wxBoxSizer(wxVERTICAL);
+    auto* image_output_title = new wxStaticText(app_panel, wxID_ANY, "Output");
+    add_static_text(image_output_title);
+    image_output = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
+    output_image_sizer->Add(image_output_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    output_image_sizer->Add(image_output, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+    images_sizer->Add(output_image_sizer, 1, wxALL | wxEXPAND, 5);
+
+    refresh_text();
+    app_panel->Layout();
 }
 
 void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
@@ -247,13 +149,14 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     const wxImage wx_image(rgb_image.cols, rgb_image.rows, rgb_image.data, true);
     image_input_1->SetBitmap(wxBitmap(wx_image));
 
-    if (operation == 0) {
-        on_fill_holes();
-    }
-    else {
+    if (operation == "Clean borders") {
         on_clean_borders();
     }
-    app_panel->Layout();
+    else {
+        on_fill_holes();
+
+    }
+    // app_panel->Layout();
 }
 
 void epolis::frame::main::on_fill_holes() {
@@ -289,16 +192,12 @@ void epolis::frame::main::on_fill_holes() {
         cv::floodFill(flood_fill, mask, cv::Point(flood_fill.cols - 1, row), cv::Scalar(0));
     }
 
-    //cv::bitwise_not(flood_fill, inv);
-
     destination = (threshold | flood_fill);
     cv::bitwise_or(flood_fill, flood_fill2, marker);
     cv::bitwise_xor(marker, destination, marker);
-    //destination = threshold;
-    step_image_1->SetBitmap(mat_to_bitmap_greyscale(threshold)); //binaryzacja
-    step_image_2->SetBitmap(mat_to_bitmap_greyscale(inv)); //negacja
-    step_image_3->SetBitmap(mat_to_bitmap_greyscale(flood_fill)); //markery
-    //step_image_4->SetBitmap(mat_to_bitmap_greyscale(flood_fill)); //czyszczenie brzegu
+    step_images.at(0)->SetBitmap(mat_to_bitmap_greyscale(threshold)); //binaryzacja
+    step_images.at(1)->SetBitmap(mat_to_bitmap_greyscale(inv)); //negacja
+    step_images.at(2)->SetBitmap(mat_to_bitmap_greyscale(flood_fill)); //markery
     image_output->SetBitmap(mat_to_bitmap_greyscale(destination)); //wynik koncowy
 
     app_panel->Layout();
@@ -307,40 +206,67 @@ void epolis::frame::main::on_fill_holes() {
 void epolis::frame::main::on_clean_borders() {
     const cv::Mat source = input_image;
 
-    cv::Mat gray, threshold, destination, marker;
+    cv::Mat gray,marker;
+
     cv::cvtColor(source, gray, cv::COLOR_BGR2GRAY);
-    cv::threshold(gray, threshold, 220, 255, cv::THRESH_OTSU);
 
-    cv::Mat mask = cv::Mat::zeros(threshold.rows + 2, threshold.cols + 2, CV_8UC1);
-    cv::Mat flood_fill = threshold.clone();
-    cv::Mat mask2 = cv::Mat::zeros(threshold.rows + 2, threshold.cols + 2, CV_8UC1);
-    cv::Mat flood_fill2 = threshold.clone();
+    cv::threshold(gray, input_image_binary, 128, 255, cv::THRESH_OTSU);
 
-    for (int col = 0; col < flood_fill2.cols; ++col) {
-        cv::floodFill(flood_fill2, mask2, cv::Point(col, 0), cv::Scalar(0));
-        cv::floodFill(flood_fill2, mask2, cv::Point(col, flood_fill2.rows - 1), cv::Scalar(0));
-    }
-    for (int row = 0; row < flood_fill2.rows; ++row) {
-        cv::floodFill(flood_fill2, mask2, cv::Point(0, row), cv::Scalar(0));
-        cv::floodFill(flood_fill2, mask2, cv::Point(flood_fill2.cols - 1, row), cv::Scalar(0));
-    }
-    for (int col = 0; col < flood_fill.cols; ++col) {
-        cv::floodFill(flood_fill, mask, cv::Point(col, 0), cv::Scalar(0));
-        cv::floodFill(flood_fill, mask, cv::Point(col, flood_fill.rows - 1), cv::Scalar(0));
-    }
-    for (int row = 0; row < flood_fill.rows; ++row) {
-        cv::floodFill(flood_fill, mask, cv::Point(0, row), cv::Scalar(0));
-        cv::floodFill(flood_fill, mask, cv::Point(flood_fill.cols - 1, row), cv::Scalar(0));
-    }
+    cv::Rect roi(1, 1, input_image_binary.cols - 2, input_image_binary.rows - 2);
 
-    destination = (threshold | flood_fill);
-    cv::bitwise_or(flood_fill, flood_fill2, marker);
-    cv::bitwise_xor(marker, destination, marker);
+    cv::Mat cropped_image = input_image_binary(roi).clone();
+    cv::Mat padded_image;
 
-    step_image_1->SetBitmap(mat_to_bitmap_greyscale(threshold)); // binaryzacja
-    step_image_2->SetBitmap(mat_to_bitmap_greyscale(marker)); // marker
-    image_output->SetBitmap(mat_to_bitmap_greyscale(flood_fill));
+    cv::copyMakeBorder(cropped_image,padded_image, 1, 1, 1, 1, cv::BORDER_CONSTANT, cv::Scalar(0));
+
+    cv::bitwise_xor(input_image_binary, padded_image, marker_animation_frame);
+    step_images.at(1)->SetBitmap(mat_to_bitmap_greyscale(marker_animation_frame));
+
+    step_images.at(0)->SetBitmap(mat_to_bitmap_greyscale(input_image_binary)); // binaryzacja
     app_panel->Layout();
+    timer.Start(175, wxTIMER_CONTINUOUS);
+}
+
+void epolis::frame::main::animate_marker_reconstruction(wxTimerEvent &event) {
+    constexpr auto dilation_type = cv::MORPH_RECT;
+    constexpr auto dilation_size = 1;
+    cv::Mat marker_next_frame,difference;
+    const cv::Mat element = getStructuringElement(
+        dilation_type,
+        cv::Size(2 * dilation_size + 1, 2 * dilation_size + 1),
+        cv::Point(dilation_size, dilation_size)
+    );
+
+    cv::dilate(marker_animation_frame, marker_next_frame, element);
+    cv::bitwise_and(marker_next_frame, input_image_binary, marker_animation_frame);
+    step_images.at(1)->SetBitmap(mat_to_bitmap_greyscale(marker_animation_frame));
+    cv::absdiff(marker_next_frame, marker_animation_frame, difference);
+    int non_zero_count = cv::countNonZero(difference);
+    if (changed_pixels == non_zero_count) {
+        count++;
+    }
+    else {
+        count = 0;
+    }
+    if (changed_pixels == non_zero_count && count == 3) {
+        cv::Mat result;
+        cv::bitwise_xor(marker_animation_frame, input_image_binary, result);
+        image_output->SetBitmap(mat_to_bitmap_greyscale(result));
+        timer.Stop();
+        app_panel->Layout();
+    }
+    changed_pixels = non_zero_count;
+
+}
+
+wxArrayString epolis::frame::main::get_operation_names() {
+    wxArrayString operation_names;
+
+    for (const auto& operation : operations) {
+        operation_names.Add(operation.first);
+    }
+
+    return operation_names;
 }
 
 void epolis::frame::main::on_save_image_button(const wxCommandEvent& event) {
