@@ -33,12 +33,13 @@ namespace epolis::frame {
 
         wxStaticBitmap* selected_input = nullptr;
         wxStaticBitmap* image_input_1;
-        std::vector<wxStaticBitmap*> step_images;
         wxStaticBitmap* image_output;
 
         wxWrapSizer* images_sizer;
 
         std::map<wxString, wxArrayString> operations;
+        std::unordered_map<std::string, wxStaticBitmap*> step_images;
+        std::unordered_map<std::string, wxBoxSizer*> box_map;
 
         wxString operation;
 
@@ -53,6 +54,7 @@ namespace epolis::frame {
         static wxBitmap mat_to_bitmap(const cv::Mat& image);
         static wxBitmap mat_to_bitmap_greyscale(const cv::Mat &image);
 
+        void initialise_layout();
         void animate_marker_reconstruction(wxTimerEvent& event);
         void on_fill_holes();
         void on_clean_borders();

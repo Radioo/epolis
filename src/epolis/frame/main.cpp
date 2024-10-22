@@ -20,12 +20,12 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     operations = {
         {"Fill holes", {
-            "Step 1",
+            "Step 1 Fill",
             "Step 2 Fill",
             "Step 3 Fill"
         }},
         {"Clean borders", {
-            "Step 1",
+            "Step 1 Clean",
             "Step 2 Clean"
         }}
     };
@@ -50,6 +50,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     Bind(wxEVT_BUTTON, &main::on_save_image_button, this, static_cast<int>(menu_item::save_right_image_button));
     Bind(wxEVT_TIMER, &main::animate_marker_reconstruction, this);
 
+
     top_menu_sizer->Add(language_choice, 0, wxALL, 5);
     top_menu_sizer->Add(operation_choice, 0, wxALL, 5);
     top_menu_sizer->Add(load_image_1_button, 0, wxALL, 5);
@@ -68,6 +69,8 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     Centre(wxBOTH);
 
+    initialise_layout();
+
     wxCommandEvent event(wxEVT_CHOICE, operation_choice->GetId());
     event.SetInt(operation_choice->GetSelection());  // Set the selection index
     event.SetString(operation_choice->GetString(operation_choice->GetSelection()));
@@ -85,30 +88,25 @@ void epolis::frame::main::on_change_language(const wxCommandEvent& event) {
     app_panel->Layout();
 }
 
-void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
-    timer.Stop();
-    operation = get_operation_names().Item(event.GetSelection());
-
-    clear_static_text();
-    images_sizer->Clear(true);
-    step_images.clear();
-
+void epolis::frame::main::initialise_layout() {
     auto* input_image_sizer = new wxBoxSizer(wxVERTICAL);
     auto* input_image_title = new wxStaticText(app_panel, wxID_ANY, "Input Image");
     add_static_text(input_image_title);
     image_input_1 = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
     input_image_sizer->Add(input_image_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
     input_image_sizer->Add(image_input_1, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(input_image_sizer, 1, wxALL | wxEXPAND, 5);
+    box_map["Input Image"] = input_image_sizer;
 
-    for (const auto& step: operations[operation]) {
-        auto* step_image_sizer = new wxBoxSizer(wxVERTICAL);
-        auto* step_image_title = new wxStaticText(app_panel, wxID_ANY, step.ToStdString());
-        add_static_text(step_image_title);
-        step_images.push_back(new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap()));
-        step_image_sizer->Add(step_image_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-        step_image_sizer->Add(step_images.back(), 0, wxALIGN_CENTER_HORIZONTAL, 5);
-        images_sizer->Add(step_image_sizer, 1, wxALL | wxEXPAND, 5);
+    for (const auto& operation : operations) {
+        for (const auto& step: operation.second) {
+            auto* step_image_sizer = new wxBoxSizer(wxVERTICAL);
+            auto* step_image_title = new wxStaticText(app_panel, wxID_ANY, step.ToStdString());
+            add_static_text(step_image_title);
+            step_images[step.ToStdString()] = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
+            step_image_sizer->Add(step_image_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+            step_image_sizer->Add(step_images[step.ToStdString()], 0, wxALIGN_CENTER_HORIZONTAL, 5);
+            box_map[step.ToStdString()] = step_image_sizer;
+        }
     }
 
     auto* output_image_sizer = new wxBoxSizer(wxVERTICAL);
@@ -117,7 +115,33 @@ void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
     image_output = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
     output_image_sizer->Add(image_output_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
     output_image_sizer->Add(image_output, 0, wxALIGN_CENTER_HORIZONTAL, 5);
-    images_sizer->Add(output_image_sizer, 1, wxALL | wxEXPAND, 5);
+    box_map["Output"] = output_image_sizer;
+}
+
+void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
+    timer.Stop();
+    image_input_1->SetBitmap(get_empty_bitmap());
+    image_output->SetBitmap(get_empty_bitmap());
+    for (const auto& box: step_images) {
+        box.second->SetBitmap(get_empty_bitmap());
+    }
+    for (const auto& box: box_map) {
+        box.second->Show(false);
+    }
+    for (int i = images_sizer->GetItemCount() - 1; i >= 0; i--) {
+        images_sizer->Detach(i);
+    }
+
+    operation = get_operation_names().Item(event.GetSelection());
+
+    images_sizer->Add(box_map["Input Image"], 1, wxALL | wxEXPAND, 5);
+    box_map["Input Image"]->Show(true);
+    for (const auto& step : operations[operation]) {
+        images_sizer->Add(box_map[step.ToStdString()], 1, wxALL | wxEXPAND, 5);
+        box_map[step.ToStdString()]->Show(true);
+    }
+    images_sizer->Add(box_map["Output"], 1, wxALL | wxEXPAND, 5);
+    box_map["Output"]->Show(true);
 
     refresh_text();
     app_panel->Layout();
@@ -195,9 +219,9 @@ void epolis::frame::main::on_fill_holes() {
     destination = (threshold | flood_fill);
     cv::bitwise_or(flood_fill, flood_fill2, marker);
     cv::bitwise_xor(marker, destination, marker);
-    step_images.at(0)->SetBitmap(mat_to_bitmap_greyscale(threshold)); //binaryzacja
-    step_images.at(1)->SetBitmap(mat_to_bitmap_greyscale(inv)); //negacja
-    step_images.at(2)->SetBitmap(mat_to_bitmap_greyscale(flood_fill)); //markery
+    step_images["Step 1 Fill"]->SetBitmap(mat_to_bitmap_greyscale(threshold)); //binaryzacja
+    step_images["Step 2 Fill"]->SetBitmap(mat_to_bitmap_greyscale(inv)); //negacja
+    step_images["Step 3 Fill"]->SetBitmap(mat_to_bitmap_greyscale(flood_fill)); //markery
     image_output->SetBitmap(mat_to_bitmap_greyscale(destination)); //wynik koncowy
 
     app_panel->Layout();
@@ -220,9 +244,9 @@ void epolis::frame::main::on_clean_borders() {
     cv::copyMakeBorder(cropped_image,padded_image, 1, 1, 1, 1, cv::BORDER_CONSTANT, cv::Scalar(0));
 
     cv::bitwise_xor(input_image_binary, padded_image, marker_animation_frame);
-    step_images.at(1)->SetBitmap(mat_to_bitmap_greyscale(marker_animation_frame));
+    step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(marker_animation_frame));
 
-    step_images.at(0)->SetBitmap(mat_to_bitmap_greyscale(input_image_binary)); // binaryzacja
+    step_images["Step 1 Clean"]->SetBitmap(mat_to_bitmap_greyscale(input_image_binary)); // binaryzacja
     app_panel->Layout();
     timer.Start(175, wxTIMER_CONTINUOUS);
 }
@@ -239,7 +263,7 @@ void epolis::frame::main::animate_marker_reconstruction(wxTimerEvent &event) {
 
     cv::dilate(marker_animation_frame, marker_next_frame, element);
     cv::bitwise_and(marker_next_frame, input_image_binary, marker_animation_frame);
-    step_images.at(1)->SetBitmap(mat_to_bitmap_greyscale(marker_animation_frame));
+    step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(marker_animation_frame));
     cv::absdiff(marker_next_frame, marker_animation_frame, difference);
     int non_zero_count = cv::countNonZero(difference);
     if (changed_pixels == non_zero_count) {
