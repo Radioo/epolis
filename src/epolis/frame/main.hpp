@@ -23,6 +23,7 @@ namespace epolis::frame {
             fill_holes = 11,
             clear_borders = 12,
             operations = 14,
+            run_button = 15,
         };
 
         wxPanel* app_panel;
