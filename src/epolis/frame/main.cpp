@@ -50,6 +50,13 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     Bind(wxEVT_BUTTON, &main::on_save_image_button, this, static_cast<int>(menu_item::save_right_image_button));
     Bind(wxEVT_TIMER, &main::animate_marker_reconstruction, this);
 
+    auto* title_sizer = new wxBoxSizer(wxHORIZONTAL);
+    auto* app_title = new wxStaticText(app_panel, wxID_ANY, "Title");
+    wxFont font = app_title->GetFont();
+    font.SetWeight(wxFONTWEIGHT_BOLD);
+    app_title->SetFont(font);
+    add_static_text(app_title);
+    title_sizer->Add(app_title);
 
     top_menu_sizer->Add(language_choice, 0, wxALL, 5);
     top_menu_sizer->Add(operation_choice, 0, wxALL, 5);
@@ -58,6 +65,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
 
     outer_sizer->Add(top_menu_sizer, 0, wxEXPAND, 5);
+    outer_sizer->Add(title_sizer, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 5);
 
     images_sizer = new wxWrapSizer(wxHORIZONTAL, wxALIGN_CENTER_HORIZONTAL);
 
