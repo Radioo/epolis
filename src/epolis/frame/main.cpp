@@ -45,6 +45,16 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     add_button(load_image_1_button);
     Bind(wxEVT_BUTTON, &main::on_load_image, this, static_cast<int>(menu_item::load_image_1));
 
+    auto* title_sizer = new wxBoxSizer(wxVERTICAL);
+
+    auto* title_text = new wxStaticText(app_panel, wxID_ANY, "Morphological transformations");
+    add_static_text(title_text);
+    auto font = title_text->GetFont();
+    font.SetWeight(wxFONTWEIGHT_BOLD);
+    title_text->SetFont(font);
+
+    title_sizer->Add(title_text, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+
     auto* save_image_button = new wxButton(app_panel, static_cast<int>(menu_item::save_right_image_button), "Save image");
     add_button(save_image_button);
     Bind(wxEVT_BUTTON, &main::on_save_image_button, this, static_cast<int>(menu_item::save_right_image_button));
@@ -54,7 +64,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     top_menu_sizer->Add(language_choice, 0, wxALL, 5);
     top_menu_sizer->Add(operation_choice, 0, wxALL, 5);
     top_menu_sizer->Add(load_image_1_button, 0, wxALL, 5);
-    top_menu_sizer->AddStretchSpacer(1);
+    top_menu_sizer->Add(title_sizer, 1, wxALIGN_CENTER_VERTICAL, 5);
     top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
 
     outer_sizer->Add(top_menu_sizer, 0, wxEXPAND, 5);
@@ -75,9 +85,6 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     event.SetInt(operation_choice->GetSelection());  // Set the selection index
     event.SetString(operation_choice->GetString(operation_choice->GetSelection()));
     on_change_operation(event);
-
-    refresh_text();
-    app_panel->Layout();
 }
 
 
