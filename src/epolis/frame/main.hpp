@@ -66,5 +66,6 @@ namespace epolis::frame {
         void on_select_image(const wxMouseEvent& event);
         void on_clear_borders(const wxCommandEvent& event);
         void on_save_image_button(const wxCommandEvent& event);
+        void on_run_button(const wxCommandEvent& event);
     };
 }

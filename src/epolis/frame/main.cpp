@@ -62,8 +62,6 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     Bind(wxEVT_BUTTON, &main::on_save_image_button, this, static_cast<int>(menu_item::save_right_image_button));
     Bind(wxEVT_TIMER, &main::animate_marker_reconstruction, this);
 
-    auto* run_button = new wxButton(app_panel, static_cast<int>(menu_item::run_button), "Run");
-    add_button(run_button);
 
     top_sizer->Add(title_sizer, 1, wxCENTER, 5);
 
@@ -73,7 +71,6 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     top_menu_sizer->AddStretchSpacer(1);
     top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
 
-    left_sizer->Add(run_button, 0, wxALIGN_CENTER_HORIZONTAL, 5);
 
     images_sizer = new wxWrapSizer(wxHORIZONTAL, wxALIGN_CENTER_HORIZONTAL);
     main_sizer->Add(left_sizer, 1, wxEXPAND | wxALL, 5);
@@ -97,6 +94,9 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     on_change_operation(event);
 }
 
+void epolis::frame::main::on_run_button(const wxCommandEvent& event) {
+    std::cout << "Run" << std::endl;
+}
 
 void epolis::frame::main::on_change_language(const wxCommandEvent& event) {
     const auto lang = static_cast<text::lang>(event.GetSelection());
@@ -145,9 +145,18 @@ void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
     for (const auto& box: box_map) {
         box.second->Show(false);
     }
+
+    for (int i = left_sizer->GetItemCount() - 1; i >= 0; i--) {
+        left_sizer->Detach(i);
+    }
+
     for (int i = images_sizer->GetItemCount() - 1; i >= 0; i--) {
         images_sizer->Detach(i);
     }
+    auto* run_button = new wxButton(app_panel, static_cast<int>(menu_item::run_button), "Run");
+    add_button(run_button);
+    Bind(wxEVT_BUTTON, &main::on_run_button, this, static_cast<int>(menu_item::run_button));
+    left_sizer->Add(run_button, 0,  wxALIGN_CENTER_HORIZONTAL, 5);
 
     operation = get_operation_names().Item(event.GetSelection());
 
