@@ -95,8 +95,20 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 }
 
 void epolis::frame::main::on_run_button(const wxCommandEvent& event) {
-    std::cout << "Run" << std::endl;
+    image_output->SetBitmap(get_empty_bitmap());
+    for (const auto& step : step_images) {
+        step.second->SetBitmap(get_empty_bitmap());
+    }
+
+    if (operation == "Clean borders") {
+        on_clean_borders();
+    } else if (operation == "Fill holes") {
+        on_fill_holes();
+    }
+
+    app_panel->Layout();
 }
+
 
 void epolis::frame::main::on_change_language(const wxCommandEvent& event) {
     const auto lang = static_cast<text::lang>(event.GetSelection());
@@ -199,13 +211,6 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     const wxImage wx_image(rgb_image.cols, rgb_image.rows, rgb_image.data, true);
     image_input_1->SetBitmap(wxBitmap(wx_image));
 
-    if (operation == "Clean borders") {
-        on_clean_borders();
-    }
-    else {
-        on_fill_holes();
-
-    }
     // app_panel->Layout();
 }
 
