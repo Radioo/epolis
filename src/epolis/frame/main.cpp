@@ -6,6 +6,7 @@
 
 #include "epolis/text/text.hpp"
 auto* left_sizer = new wxBoxSizer(wxVERTICAL);
+wxButton *run_button;
 
 epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosition, wxSize(1280, 720)) {
     app_panel = new wxPanel(this, wxID_ANY);
@@ -14,6 +15,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     auto* top_sizer = new wxBoxSizer(wxVERTICAL);
     auto* top_menu_sizer = new wxBoxSizer(wxHORIZONTAL);
     auto* main_sizer = new wxBoxSizer(wxHORIZONTAL);
+    auto* main_left_sizer = new wxBoxSizer(wxVERTICAL);
 
     const wxArrayString languages = {
         "English",
@@ -49,6 +51,10 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     auto* title_sizer = new wxBoxSizer(wxVERTICAL);
 
+    run_button = new wxButton(app_panel, static_cast<int>(menu_item::run_button), "Run");
+    add_button(run_button);
+    Bind(wxEVT_BUTTON, &main::on_run_button, this, static_cast<int>(menu_item::run_button));
+
     auto* title_text = new wxStaticText(app_panel, wxID_ANY, "Morphological transformations");
     add_static_text(title_text);
     auto font = title_text->GetFont();
@@ -65,15 +71,18 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     top_sizer->Add(title_sizer, 1, wxCENTER, 5);
 
-    top_menu_sizer->Add(language_choice, 0, wxALL, 5);
-    top_menu_sizer->Add(operation_choice, 0, wxALL, 5);
+    main_left_sizer->Add(language_choice, 0, wxALL, 5);
+    main_left_sizer->Add(operation_choice, 0, wxALL, 5);
     top_menu_sizer->Add(load_image_1_button, 0, wxALL, 5);
     top_menu_sizer->AddStretchSpacer(1);
     top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
 
 
     images_sizer = new wxWrapSizer(wxHORIZONTAL, wxALIGN_CENTER_HORIZONTAL);
-    main_sizer->Add(left_sizer, 1, wxEXPAND | wxALL, 5);
+
+    main_left_sizer->Add(left_sizer, 1, wxEXPAND | wxALL, 5);
+
+    main_sizer->Add(main_left_sizer, 1, wxEXPAND | wxALL, 5);
     main_sizer->Add(images_sizer, 1, wxEXPAND | wxALL, 5);
 
     app_panel->SetSizer(outer_sizer);
@@ -95,6 +104,10 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 }
 
 void epolis::frame::main::on_run_button(const wxCommandEvent& event) {
+    if (input_image.empty()) {
+        return;
+    }
+
     image_output->SetBitmap(get_empty_bitmap());
     for (const auto& step : step_images) {
         step.second->SetBitmap(get_empty_bitmap());
@@ -165,14 +178,13 @@ void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
     for (int i = images_sizer->GetItemCount() - 1; i >= 0; i--) {
         images_sizer->Detach(i);
     }
-    auto* run_button = new wxButton(app_panel, static_cast<int>(menu_item::run_button), "Run");
-    add_button(run_button);
-    Bind(wxEVT_BUTTON, &main::on_run_button, this, static_cast<int>(menu_item::run_button));
-    left_sizer->Add(run_button, 0,  wxALIGN_CENTER_HORIZONTAL, 5);
+
+    left_sizer->Add(run_button, 0,  wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+    run_button->Show(true);
 
     operation = get_operation_names().Item(event.GetSelection());
 
-    left_sizer->Add(box_map["Input Image"], 0, wxALL | wxEXPAND, 5);
+    left_sizer->Add(box_map["Input Image"], 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
     box_map["Input Image"]->Show(true);
     for (const auto& step : operations[operation]) {
         images_sizer->Add(box_map[step.ToStdString()], 1, wxALL | wxEXPAND, 5);
