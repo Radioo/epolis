@@ -80,10 +80,17 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     images_sizer = new wxWrapSizer(wxHORIZONTAL, wxALIGN_CENTER_HORIZONTAL);
 
+    main_left_sizer->AddStretchSpacer(1);
     main_left_sizer->Add(left_sizer, 1, wxEXPAND | wxALL, 5);
+    main_left_sizer->AddStretchSpacer(2);
 
     main_sizer->Add(main_left_sizer, 1, wxEXPAND | wxALL, 5);
-    main_sizer->Add(images_sizer, 1, wxEXPAND | wxALL, 5);
+
+    auto* main_right_sizer = new wxBoxSizer(wxVERTICAL);
+    main_right_sizer->AddStretchSpacer(1);
+    main_right_sizer->Add(images_sizer, 1, wxEXPAND | wxALL, 5);
+    main_right_sizer->AddStretchSpacer(1);
+    main_sizer->Add(main_right_sizer, 1, wxEXPAND | wxALL, 5);
 
     app_panel->SetSizer(outer_sizer);
 
