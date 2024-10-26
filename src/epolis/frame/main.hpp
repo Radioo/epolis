@@ -7,6 +7,7 @@
 #include <opencv2/imgcodecs.hpp>
 
 #include "epolis/text/dynamic_text.hpp"
+#include "epolis/Utility/operations.h"
 
 class wxWrapSizer;
 
@@ -36,6 +37,8 @@ namespace epolis::frame {
         wxStaticBitmap* image_output;
 
         wxWrapSizer* images_sizer;
+
+        utility::operations operation_function;
 
         std::map<wxString, wxArrayString> operations;
         std::unordered_map<std::string, wxStaticBitmap*> step_images;

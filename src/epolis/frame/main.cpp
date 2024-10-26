@@ -60,7 +60,6 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     Bind(wxEVT_BUTTON, &main::on_save_image_button, this, static_cast<int>(menu_item::save_right_image_button));
     Bind(wxEVT_TIMER, &main::animate_marker_reconstruction, this);
 
-
     top_menu_sizer->Add(language_choice, 0, wxALL, 5);
     top_menu_sizer->Add(operation_choice, 0, wxALL, 5);
     top_menu_sizer->Add(load_image_1_button, 0, wxALL, 5);
@@ -127,6 +126,7 @@ void epolis::frame::main::initialise_layout() {
 
 void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
     timer.Stop();
+    operation_function.animate_marker_reconstruction(true);
     image_input_1->SetBitmap(get_empty_bitmap());
     image_output->SetBitmap(get_empty_bitmap());
     for (const auto& box: step_images) {
@@ -235,59 +235,25 @@ void epolis::frame::main::on_fill_holes() {
 }
 
 void epolis::frame::main::on_clean_borders() {
-    const cv::Mat source = input_image;
+    timer.Stop();
+    operation_function.animate_marker_reconstruction(true);
+    operation_function.clean_borders(input_image);
 
-    cv::Mat gray,marker;
+    step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_marker_animation_frame()));
 
-    cv::cvtColor(source, gray, cv::COLOR_BGR2GRAY);
-
-    cv::threshold(gray, input_image_binary, 128, 255, cv::THRESH_OTSU);
-
-    cv::Rect roi(1, 1, input_image_binary.cols - 2, input_image_binary.rows - 2);
-
-    cv::Mat cropped_image = input_image_binary(roi).clone();
-    cv::Mat padded_image;
-
-    cv::copyMakeBorder(cropped_image,padded_image, 1, 1, 1, 1, cv::BORDER_CONSTANT, cv::Scalar(0));
-
-    cv::bitwise_xor(input_image_binary, padded_image, marker_animation_frame);
-    step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(marker_animation_frame));
-
-    step_images["Step 1 Clean"]->SetBitmap(mat_to_bitmap_greyscale(input_image_binary)); // binaryzacja
+    step_images["Step 1 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_input_image_binary())); // binaryzacja
     app_panel->Layout();
-    timer.Start(175, wxTIMER_CONTINUOUS);
+    timer.Start(50, wxTIMER_CONTINUOUS);
 }
 
 void epolis::frame::main::animate_marker_reconstruction(wxTimerEvent &event) {
-    constexpr auto dilation_type = cv::MORPH_RECT;
-    constexpr auto dilation_size = 1;
-    cv::Mat marker_next_frame,difference;
-    const cv::Mat element = getStructuringElement(
-        dilation_type,
-        cv::Size(2 * dilation_size + 1, 2 * dilation_size + 1),
-        cv::Point(dilation_size, dilation_size)
-    );
-
-    cv::dilate(marker_animation_frame, marker_next_frame, element);
-    cv::bitwise_and(marker_next_frame, input_image_binary, marker_animation_frame);
-    step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(marker_animation_frame));
-    cv::absdiff(marker_next_frame, marker_animation_frame, difference);
-    int non_zero_count = cv::countNonZero(difference);
-    if (changed_pixels == non_zero_count) {
-        count++;
-    }
-    else {
-        count = 0;
-    }
-    if (changed_pixels == non_zero_count && count == 3) {
-        cv::Mat result;
-        cv::bitwise_xor(marker_animation_frame, input_image_binary, result);
-        image_output->SetBitmap(mat_to_bitmap_greyscale(result));
+    if(operation_function.animate_marker_reconstruction()) {
+        image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_clean_borders_result()));
         timer.Stop();
-        app_panel->Layout();
     }
-    changed_pixels = non_zero_count;
 
+    step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_animation_frame()));
+    app_panel->Layout();
 }
 
 wxArrayString epolis::frame::main::get_operation_names() {
