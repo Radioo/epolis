@@ -187,49 +187,16 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
         on_fill_holes();
 
     }
-    // app_panel->Layout();
 }
 
 void epolis::frame::main::on_fill_holes() {
-    const cv::Mat source = input_image;
-    cv::Mat destination,threshold,flood_fill,flood_fill2,inv,inv2,gray,marker;
+    operation_function.animate_marker_reconstruction(true);
+    operation_function.fill_holes(input_image);
 
-    cvtColor(source, gray, cv::COLOR_BGR2GRAY);
-
-    cv::threshold(gray,threshold, 128, 255, cv::THRESH_OTSU);
-    bitwise_not(threshold, inv);
-
-    cv::Mat mask = cv::Mat::zeros(inv.rows + 2, inv.cols + 2, CV_8UC1);
-    cv::Mat mask2 = cv::Mat::zeros(threshold.rows + 2, threshold.cols + 2, CV_8UC1);
-    flood_fill = inv.clone();
-    flood_fill2 = threshold.clone();
-
-
-    // cv::floodFill(flood_fill2, mask2, cv::Point(0, 0), cv::Scalar(0));
-    for (int col = 0; col < flood_fill2.cols; ++col) {
-        cv::floodFill(flood_fill2, mask2, cv::Point(col, 0), cv::Scalar(0));
-        cv::floodFill(flood_fill2, mask2, cv::Point(col, flood_fill2.rows - 1), cv::Scalar(0));
-    }
-    for (int row = 0; row < flood_fill2.rows; ++row) {
-        cv::floodFill(flood_fill2, mask2, cv::Point(0, row), cv::Scalar(0));
-        cv::floodFill(flood_fill2, mask2, cv::Point(flood_fill2.cols - 1, row), cv::Scalar(0));
-    }
-    for (int col = 0; col < flood_fill.cols; ++col) {
-        cv::floodFill(flood_fill, mask, cv::Point(col, 0), cv::Scalar(0));
-        cv::floodFill(flood_fill, mask, cv::Point(col, flood_fill.rows - 1), cv::Scalar(0));
-    }
-    for (int row = 0; row < flood_fill.rows; ++row) {
-        cv::floodFill(flood_fill, mask, cv::Point(0, row), cv::Scalar(0));
-        cv::floodFill(flood_fill, mask, cv::Point(flood_fill.cols - 1, row), cv::Scalar(0));
-    }
-
-    destination = (threshold | flood_fill);
-    cv::bitwise_or(flood_fill, flood_fill2, marker);
-    cv::bitwise_xor(marker, destination, marker);
-    step_images["Step 1 Fill"]->SetBitmap(mat_to_bitmap_greyscale(threshold)); //binaryzacja
-    step_images["Step 2 Fill"]->SetBitmap(mat_to_bitmap_greyscale(inv)); //negacja
-    step_images["Step 3 Fill"]->SetBitmap(mat_to_bitmap_greyscale(flood_fill)); //markery
-    image_output->SetBitmap(mat_to_bitmap_greyscale(destination)); //wynik koncowy
+    step_images["Step 1 Fill"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_input_image_binary())); //binaryzacja
+    step_images["Step 2 Fill"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_inverted_image())); //negacja
+    step_images["Step 3 Fill"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_destination())); //markery
+    image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_result())); //wynik koncowy
 
     app_panel->Layout();
 }
@@ -248,7 +215,7 @@ void epolis::frame::main::on_clean_borders() {
 
 void epolis::frame::main::animate_marker_reconstruction(wxTimerEvent &event) {
     if(operation_function.animate_marker_reconstruction()) {
-        image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_clean_borders_result()));
+        image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_destination()));
         timer.Stop();
     }
 
@@ -310,23 +277,6 @@ void epolis::frame::main::on_save_image_button(const wxCommandEvent& event) {
         wxMessageBox("Failed to save image", "Error", wxICON_ERROR);
     }
 }
-
-cv::Mat epolis::frame::main::bitmap_to_mat(const wxStaticBitmap* image) {
-    const wxBitmap bitmap = image->GetBitmap();
-    const wxImage wx_image = bitmap.ConvertToImage();
-    cv::Mat mat(wx_image.GetHeight(), wx_image.GetWidth(), CV_8UC3, wx_image.GetData());
-    return mat;
-}
-
-cv::Mat epolis::frame::main::bitmap_to_mat_grayscale(const wxStaticBitmap* image) {
-    const wxBitmap bitmap = image->GetBitmap();
-    const wxImage wx_image = bitmap.ConvertToImage();
-    const cv::Mat mat(wx_image.GetHeight(), wx_image.GetWidth(), CV_8UC3, wx_image.GetData());
-    cv::Mat gray;
-    cvtColor(mat, gray, cv::COLOR_BGR2GRAY);
-    return gray;
-}
-
 
 wxBitmap epolis::frame::main::mat_to_bitmap(const cv::Mat& image) {
     const wxImage wx_image(image.cols, image.rows, image.data, true);
