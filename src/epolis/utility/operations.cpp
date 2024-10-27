@@ -1,4 +1,4 @@
-#include "epolis\Utility\operations.h"
+#include "epolis\utility\operations.h"
 
 namespace epolis::utility {
     void operations::clean_borders(cv::Mat& input_image, bool convert_grayscale) {
@@ -68,15 +68,16 @@ namespace epolis::utility {
     }
 
     void operations::fill_holes(cv::Mat &input_image) {
-    convert_to_grayscale(input_image);
-    bitwise_not(input_image_binary, inverted_image);
+        convert_to_grayscale(input_image);
+
+        bitwise_not(input_image_binary, inverted_image);
 
         is_pixel_diff(true);
 
-    clean_borders(inverted_image, false);
+        clean_borders(inverted_image, false);
         animate_marker_reconstruction(false, false);
 
-    cv::bitwise_or(input_image_binary, destination, result);
+        cv::bitwise_or(input_image_binary, destination, result);
 
     }
 
@@ -123,7 +124,7 @@ namespace epolis::utility {
         else {
             count = 0;
         }
-        if (changed_pixels == non_zero_count && count == 5) {
+        if (changed_pixels == non_zero_count && count == 3) {
             changed_pixels = 0;
             count = 0;
             return false;

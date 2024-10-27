@@ -7,7 +7,7 @@
 #include <opencv2/imgcodecs.hpp>
 
 #include "epolis/text/dynamic_text.hpp"
-#include "epolis/Utility/operations.h"
+#include "epolis/utility/operations.h"
 
 class wxWrapSizer;
 
@@ -24,9 +24,11 @@ namespace epolis::frame {
             fill_holes = 11,
             clear_borders = 12,
             operations = 14,
+            run_button = 15,
         };
 
         wxPanel* app_panel;
+        wxBoxSizer* left_sizer;
 
         cv::Mat input_image;
         cv::Mat input_image_binary;
@@ -48,9 +50,6 @@ namespace epolis::frame {
 
         wxTimer timer;
 
-        int changed_pixels;
-        int count = 0;
-
         static wxBitmap get_empty_bitmap();
         static cv::Mat bitmap_to_mat(const wxStaticBitmap* image);
         static cv::Mat bitmap_to_mat_grayscale(const wxStaticBitmap *image);
@@ -68,5 +67,6 @@ namespace epolis::frame {
         void on_select_image(const wxMouseEvent& event);
         void on_clear_borders(const wxCommandEvent& event);
         void on_save_image_button(const wxCommandEvent& event);
+        void on_run_button(const wxCommandEvent& event);
     };
 }
