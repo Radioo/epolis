@@ -72,14 +72,14 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     top_sizer->Add(title_sizer, 1, wxCENTER, 5);
 
-    button_hSizer->Add(language_choice, 0, wxALL, 5);
+    button_hSizer->Add(language_choice, 0, wxTOP, 5);
     button_hSizer->Add(operation_choice, 0, wxALL, 5);
     button_hSizer->Add(run_button, 0, wxALL, 5);
     top_menu_sizer->Add(load_image_1_button, 0, wxALL, 5);
     top_menu_sizer->AddStretchSpacer(1);
     top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
 
-    main_left_sizer->Add(button_hSizer, 0, wxALL, 5);
+    main_left_sizer->Add(button_hSizer, 0, wxALL, 0);
 
     images_sizer = new wxWrapSizer(wxHORIZONTAL, wxALIGN_CENTER_HORIZONTAL);
 
@@ -230,7 +230,7 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     const wxImage wx_image(rgb_image.cols, rgb_image.rows, rgb_image.data, true);
     image_input_1->SetBitmap(wxBitmap(wx_image));
 
-    // app_panel->Layout();
+    app_panel->Layout();
 }
 
 void epolis::frame::main::on_fill_holes() {
