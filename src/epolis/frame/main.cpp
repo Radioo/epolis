@@ -6,7 +6,6 @@
 
 #include "epolis/text/text.hpp"
 auto* left_sizer = new wxBoxSizer(wxVERTICAL);
-wxButton *run_button;
 
 epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosition, wxSize(1280, 720)) {
     app_panel = new wxPanel(this, wxID_ANY);
@@ -16,6 +15,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     auto* top_menu_sizer = new wxBoxSizer(wxHORIZONTAL);
     auto* main_sizer = new wxBoxSizer(wxHORIZONTAL);
     auto* main_left_sizer = new wxBoxSizer(wxVERTICAL);
+    auto* button_hSizer = new wxBoxSizer(wxHORIZONTAL);
 
     const wxArrayString languages = {
         "English",
@@ -51,7 +51,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     auto* title_sizer = new wxBoxSizer(wxVERTICAL);
 
-    run_button = new wxButton(app_panel, static_cast<int>(menu_item::run_button), "Run");
+    auto* run_button = new wxButton(app_panel, static_cast<int>(menu_item::run_button), "Run");
     add_button(run_button);
     Bind(wxEVT_BUTTON, &main::on_run_button, this, static_cast<int>(menu_item::run_button));
 
@@ -71,12 +71,14 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     top_sizer->Add(title_sizer, 1, wxCENTER, 5);
 
-    main_left_sizer->Add(language_choice, 0, wxALL, 5);
-    main_left_sizer->Add(operation_choice, 0, wxALL, 5);
+    button_hSizer->Add(language_choice, 0, wxALL, 5);
+    button_hSizer->Add(operation_choice, 0, wxALL, 5);
+    button_hSizer->Add(run_button, 0, wxALL, 5);
     top_menu_sizer->Add(load_image_1_button, 0, wxALL, 5);
     top_menu_sizer->AddStretchSpacer(1);
     top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
 
+    main_left_sizer->Add(button_hSizer, 0, wxALL, 5);
 
     images_sizer = new wxWrapSizer(wxHORIZONTAL, wxALIGN_CENTER_HORIZONTAL);
 
@@ -186,8 +188,6 @@ void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
         images_sizer->Detach(i);
     }
 
-    left_sizer->Add(run_button, 0,  wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
-    run_button->Show(true);
 
     operation = get_operation_names().Item(event.GetSelection());
 
