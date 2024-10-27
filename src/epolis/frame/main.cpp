@@ -1,14 +1,15 @@
 #include <filesystem>
-
-#include "epolis/frame/main.hpp"
-
 #include <wx/wrapsizer.h>
 
+#include "epolis/frame/main.hpp"
 #include "epolis/text/text.hpp"
 auto* left_sizer = new wxBoxSizer(wxVERTICAL);
+#include "epolis/style.hpp"
 
 epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosition, wxSize(1280, 720)) {
     app_panel = new wxPanel(this, wxID_ANY);
+
+    app_panel->SetFont(app_panel->GetFont().Scale(SCALE));
 
     auto* outer_sizer = new wxBoxSizer(wxVERTICAL);
     auto* top_sizer = new wxBoxSizer(wxVERTICAL);
@@ -187,7 +188,6 @@ void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
     for (int i = images_sizer->GetItemCount() - 1; i >= 0; i--) {
         images_sizer->Detach(i);
     }
-
 
     operation = get_operation_names().Item(event.GetSelection());
 
