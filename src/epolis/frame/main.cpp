@@ -1,17 +1,22 @@
 #include <filesystem>
-
-#include "epolis/frame/main.hpp"
-
 #include <wx/wrapsizer.h>
 
+#include "epolis/frame/main.hpp"
 #include "epolis/text/text.hpp"
+#include "epolis/style.hpp"
 
 epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosition, wxSize(1280, 720)) {
     app_panel = new wxPanel(this, wxID_ANY);
 
-    auto* outer_sizer = new wxBoxSizer(wxVERTICAL);
+    app_panel->SetFont(app_panel->GetFont().Scale(SCALE));
 
+    auto* outer_sizer = new wxBoxSizer(wxVERTICAL);
+    auto* top_sizer = new wxBoxSizer(wxVERTICAL);
     auto* top_menu_sizer = new wxBoxSizer(wxHORIZONTAL);
+    auto* main_sizer = new wxBoxSizer(wxHORIZONTAL);
+    auto* main_left_sizer = new wxBoxSizer(wxVERTICAL);
+    auto* button_hSizer = new wxBoxSizer(wxHORIZONTAL);
+    left_sizer = new wxBoxSizer(wxVERTICAL);
 
     const wxArrayString languages = {
         "English",
@@ -47,6 +52,10 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     auto* title_sizer = new wxBoxSizer(wxVERTICAL);
 
+    auto* run_button = new wxButton(app_panel, static_cast<int>(menu_item::run_button), "Run");
+    add_button(run_button);
+    Bind(wxEVT_BUTTON, &main::on_run_button, this, static_cast<int>(menu_item::run_button));
+
     auto* title_text = new wxStaticText(app_panel, wxID_ANY, "Morphological transformations");
     add_static_text(title_text);
     auto font = title_text->GetFont();
@@ -60,17 +69,31 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     Bind(wxEVT_BUTTON, &main::on_save_image_button, this, static_cast<int>(menu_item::save_right_image_button));
     Bind(wxEVT_TIMER, &main::animate_marker_reconstruction, this);
 
-    top_menu_sizer->Add(language_choice, 0, wxALL, 5);
-    top_menu_sizer->Add(operation_choice, 0, wxALL, 5);
+
+    top_sizer->Add(title_sizer, 1, wxCENTER, 5);
+
+    button_hSizer->Add(language_choice, 0, wxTOP, 5);
+    button_hSizer->Add(operation_choice, 0, wxALL, 5);
+    button_hSizer->Add(run_button, 0, wxALL, 5);
     top_menu_sizer->Add(load_image_1_button, 0, wxALL, 5);
-    top_menu_sizer->Add(title_sizer, 1, wxALIGN_CENTER_VERTICAL, 5);
+    top_menu_sizer->AddStretchSpacer(1);
     top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
 
-    outer_sizer->Add(top_menu_sizer, 0, wxEXPAND, 5);
+    main_left_sizer->Add(button_hSizer, 0, wxALL, 0);
 
     images_sizer = new wxWrapSizer(wxHORIZONTAL, wxALIGN_CENTER_HORIZONTAL);
 
-    outer_sizer->Add(images_sizer, 1, wxEXPAND, 5);
+    main_left_sizer->AddStretchSpacer(1);
+    main_left_sizer->Add(left_sizer, 1, wxEXPAND | wxALL, 5);
+    main_left_sizer->AddStretchSpacer(2);
+
+    main_sizer->Add(main_left_sizer, 1, wxEXPAND | wxALL, 5);
+
+    auto* main_right_sizer = new wxBoxSizer(wxVERTICAL);
+    main_right_sizer->AddStretchSpacer(1);
+    main_right_sizer->Add(images_sizer, 1, wxEXPAND | wxALL, 5);
+    main_right_sizer->AddStretchSpacer(1);
+    main_sizer->Add(main_right_sizer, 1, wxEXPAND | wxALL, 5);
 
     app_panel->SetSizer(outer_sizer);
 
@@ -78,12 +101,35 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     Centre(wxBOTH);
 
+    outer_sizer->Add(top_sizer, 0, wxEXPAND, 5);
+    outer_sizer->Add(top_menu_sizer, 0, wxEXPAND, 5);
+    outer_sizer->Add(main_sizer, 0, wxEXPAND, 5);
+
     initialise_layout();
 
     wxCommandEvent event(wxEVT_CHOICE, operation_choice->GetId());
     event.SetInt(operation_choice->GetSelection());  // Set the selection index
     event.SetString(operation_choice->GetString(operation_choice->GetSelection()));
     on_change_operation(event);
+}
+
+void epolis::frame::main::on_run_button(const wxCommandEvent& event) {
+    if (input_image.empty()) {
+        return;
+    }
+
+    image_output->SetBitmap(get_empty_bitmap());
+    for (const auto& step : step_images) {
+        step.second->SetBitmap(get_empty_bitmap());
+    }
+
+    if (operation == "Clean borders") {
+        on_clean_borders();
+    } else if (operation == "Fill holes") {
+        on_fill_holes();
+    }
+
+    app_panel->Layout();
 }
 
 
@@ -127,6 +173,7 @@ void epolis::frame::main::initialise_layout() {
 void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
     timer.Stop();
     operation_function.animate_marker_reconstruction(true);
+    input_image.release();
     image_input_1->SetBitmap(get_empty_bitmap());
     image_output->SetBitmap(get_empty_bitmap());
     for (const auto& box: step_images) {
@@ -135,13 +182,18 @@ void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
     for (const auto& box: box_map) {
         box.second->Show(false);
     }
+
+    for (int i = left_sizer->GetItemCount() - 1; i >= 0; i--) {
+        left_sizer->Detach(i);
+    }
+
     for (int i = images_sizer->GetItemCount() - 1; i >= 0; i--) {
         images_sizer->Detach(i);
     }
 
     operation = get_operation_names().Item(event.GetSelection());
 
-    images_sizer->Add(box_map["Input Image"], 1, wxALL | wxEXPAND, 5);
+    left_sizer->Add(box_map["Input Image"], 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
     box_map["Input Image"]->Show(true);
     for (const auto& step : operations[operation]) {
         images_sizer->Add(box_map[step.ToStdString()], 1, wxALL | wxEXPAND, 5);
@@ -180,13 +232,7 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     const wxImage wx_image(rgb_image.cols, rgb_image.rows, rgb_image.data, true);
     image_input_1->SetBitmap(wxBitmap(wx_image));
 
-    if (operation == "Clean borders") {
-        on_clean_borders();
-    }
-    else {
-        on_fill_holes();
-
-    }
+    app_panel->Layout();
 }
 
 void epolis::frame::main::on_fill_holes() {

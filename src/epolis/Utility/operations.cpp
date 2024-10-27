@@ -123,7 +123,7 @@ namespace epolis::utility {
         else {
             count = 0;
         }
-        if (changed_pixels == non_zero_count && count == 5) {
+        if (changed_pixels == non_zero_count && count == 3) {
             changed_pixels = 0;
             count = 0;
             return false;
