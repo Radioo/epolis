@@ -5,7 +5,7 @@
 #include <wx/wx.h>
 
 namespace epolis::utility {
-class operations {
+    class operations {
     public:
         void clean_borders(cv::Mat& input_image, bool convert_grayscale = true);
         void fill_holes(cv::Mat& input_image);
