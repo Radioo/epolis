@@ -27,6 +27,7 @@ namespace epolis::frame {
         };
 
         wxPanel* app_panel;
+        wxBoxSizer* left_sizer;
 
         cv::Mat input_image;
         cv::Mat input_image_binary;

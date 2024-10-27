@@ -3,7 +3,6 @@
 
 #include "epolis/frame/main.hpp"
 #include "epolis/text/text.hpp"
-auto* left_sizer = new wxBoxSizer(wxVERTICAL);
 #include "epolis/style.hpp"
 
 epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosition, wxSize(1280, 720)) {
@@ -17,6 +16,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     auto* main_sizer = new wxBoxSizer(wxHORIZONTAL);
     auto* main_left_sizer = new wxBoxSizer(wxVERTICAL);
     auto* button_hSizer = new wxBoxSizer(wxHORIZONTAL);
+    left_sizer = new wxBoxSizer(wxVERTICAL);
 
     const wxArrayString languages = {
         "English",
