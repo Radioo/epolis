@@ -1,13 +1,14 @@
 #include <filesystem>
-
-#include "epolis/frame/main.hpp"
-
 #include <wx/wrapsizer.h>
 
+#include "epolis/frame/main.hpp"
 #include "epolis/text/text.hpp"
+#include "epolis/style.hpp"
 
 epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosition, wxSize(1280, 720)) {
     app_panel = new wxPanel(this, wxID_ANY);
+
+    app_panel->SetFont(app_panel->GetFont().Scale(SCALE));
 
     auto* outer_sizer = new wxBoxSizer(wxVERTICAL);
 
