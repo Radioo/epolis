@@ -29,6 +29,7 @@ namespace epolis::frame {
 
         wxPanel* app_panel;
         wxBoxSizer* left_sizer;
+        wxSlider* timer_slider;
 
         cv::Mat input_image;
         cv::Mat input_image_binary;
@@ -68,5 +69,6 @@ namespace epolis::frame {
         void on_clear_borders(const wxCommandEvent& event);
         void on_save_image_button(const wxCommandEvent& event);
         void on_run_button(const wxCommandEvent& event);
+        void on_timer_slider(const wxCommandEvent& event);
     };
 }

@@ -15,7 +15,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     auto* top_menu_sizer = new wxBoxSizer(wxHORIZONTAL);
     auto* main_sizer = new wxBoxSizer(wxHORIZONTAL);
     auto* main_left_sizer = new wxBoxSizer(wxVERTICAL);
-    auto* button_hSizer = new wxBoxSizer(wxHORIZONTAL);
+    auto* button_hSizer = new wxWrapSizer(wxHORIZONTAL);
     left_sizer = new wxBoxSizer(wxVERTICAL);
 
     const wxArrayString languages = {
@@ -56,6 +56,18 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     add_button(run_button);
     Bind(wxEVT_BUTTON, &main::on_run_button, this, static_cast<int>(menu_item::run_button));
 
+    auto* slider_sizer = new wxBoxSizer(wxHORIZONTAL);
+
+    auto* slider_text = new wxStaticText(app_panel, wxID_ANY, "Animation speed");
+    add_static_text(slider_text);
+
+    timer_slider = new wxSlider(app_panel, wxID_ANY, 0, 0, 100, wxDefaultPosition, wxSize(200, -1), wxSL_HORIZONTAL | wxSL_LABELS);
+    timer_slider->SetTickFreq(10);
+    timer_slider->Bind(wxEVT_SCROLL_CHANGED, &main::on_timer_slider, this);
+
+    slider_sizer->Add(slider_text, 0, 0, 5);
+    slider_sizer->Add(timer_slider, 0, 0, 5);
+
     auto* title_text = new wxStaticText(app_panel, wxID_ANY, "Morphological transformations");
     add_static_text(title_text);
     auto font = title_text->GetFont();
@@ -75,6 +87,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     button_hSizer->Add(language_choice, 0, wxTOP, 5);
     button_hSizer->Add(operation_choice, 0, wxALL, 5);
     button_hSizer->Add(run_button, 0, wxALL, 5);
+    button_hSizer->Add(slider_sizer, 0, wxALL, 5);
     top_menu_sizer->Add(load_image_1_button, 0, wxALL, 5);
     top_menu_sizer->AddStretchSpacer(1);
     top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
@@ -130,6 +143,14 @@ void epolis::frame::main::on_run_button(const wxCommandEvent& event) {
     }
 
     app_panel->Layout();
+}
+
+void epolis::frame::main::on_timer_slider(const wxCommandEvent& event) {
+    if(timer.IsRunning()) {
+        std::cout << timer_slider->GetValue() << std::endl;
+        timer.Stop();
+        timer.Start(timer_slider->GetValue(), wxTIMER_CONTINUOUS);
+    }
 }
 
 
@@ -256,7 +277,7 @@ void epolis::frame::main::on_clean_borders() {
 
     step_images["Step 1 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_input_image_binary())); // binaryzacja
     app_panel->Layout();
-    timer.Start(50, wxTIMER_CONTINUOUS);
+    timer.Start(timer_slider->GetValue(), wxTIMER_CONTINUOUS);
 }
 
 void epolis::frame::main::animate_marker_reconstruction(wxTimerEvent &event) {
@@ -266,7 +287,7 @@ void epolis::frame::main::animate_marker_reconstruction(wxTimerEvent &event) {
     }
 
     step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_animation_frame()));
-    app_panel->Layout();
+    // app_panel->Layout();
 }
 
 wxArrayString epolis::frame::main::get_operation_names() {
