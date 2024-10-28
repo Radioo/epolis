@@ -13,7 +13,7 @@ Step 2 Clean,Marker reconstruction,Rekonstrukcja markerów
 Step 3 Clean,Border clearing,Czyszczenie brzegu
 Step 1 Clean,Binary Image,Obraz binarny
 Output,Resulting Image,Obraz wynikowy
-Fill holes,Fill holes,Wypełnij dziury
+Fill holes,Fill holes,Wypełnianie otworów
 Clean borders,Clean borders,Czyszczenie brzegu
 Morphological transformations,Morphological transformations,Transformacje morfologiczne
 Run,Run,Uruchom
