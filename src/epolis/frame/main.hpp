@@ -25,11 +25,13 @@ namespace epolis::frame {
             clear_borders = 12,
             operations = 14,
             run_button = 15,
+            toggle_animation = 16,
         };
 
         wxPanel* app_panel;
         wxBoxSizer* left_sizer;
         wxSlider* timer_slider;
+        wxCheckBox* animation_toggle;
 
         cv::Mat input_image;
         cv::Mat input_image_binary;
@@ -51,6 +53,8 @@ namespace epolis::frame {
 
         wxTimer timer;
 
+        bool animate = false;
+
         static wxBitmap get_empty_bitmap();
         static cv::Mat bitmap_to_mat(const wxStaticBitmap* image);
         static cv::Mat bitmap_to_mat_grayscale(const wxStaticBitmap *image);
@@ -62,6 +66,7 @@ namespace epolis::frame {
         void on_fill_holes();
         void on_clean_borders();
         wxArrayString get_operation_names();
+        void on_toggle_animation(wxCommandEvent& event);
         void on_change_language(const wxCommandEvent& event);
         void on_change_operation(const wxCommandEvent& event);
         void on_load_image(const wxCommandEvent& event);

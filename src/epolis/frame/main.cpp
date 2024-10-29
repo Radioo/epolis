@@ -68,6 +68,17 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     slider_sizer->Add(slider_text, 0, 0, 5);
     slider_sizer->Add(timer_slider, 0, 0, 5);
 
+    auto* animation_toggle_sizer = new wxBoxSizer(wxHORIZONTAL);
+
+    auto* animation_check_text = new wxStaticText(app_panel, wxID_ANY, "Toggle animation");
+    add_static_text(animation_check_text);
+
+    animation_toggle = new wxCheckBox(app_panel, static_cast<int>(menu_item::toggle_animation), "");
+    Bind(wxEVT_CHECKBOX, &main::on_toggle_animation, this, static_cast<int>(menu_item::toggle_animation));
+
+    animation_toggle_sizer->Add(animation_check_text, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+    animation_toggle_sizer->Add(animation_toggle, 0, wxALIGN_CENTER_VERTICAL);
+
     auto* title_text = new wxStaticText(app_panel, wxID_ANY, "Morphological transformations");
     add_static_text(title_text);
     auto font = title_text->GetFont();
@@ -93,6 +104,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
 
     main_left_sizer->Add(button_hSizer, 0, wxALL, 0);
+    main_left_sizer->Add(animation_toggle_sizer, 0, wxALL, 0);
 
     images_sizer = new wxWrapSizer(wxHORIZONTAL, wxALIGN_CENTER_HORIZONTAL);
 
@@ -277,7 +289,14 @@ void epolis::frame::main::on_clean_borders() {
 
     step_images["Step 1 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_input_image_binary())); // binaryzacja
     app_panel->Layout();
-    timer.Start(timer_slider->GetValue(), wxTIMER_CONTINUOUS);
+    if (animate) {
+        timer.Start(timer_slider->GetValue(), wxTIMER_CONTINUOUS);
+    }
+    else {
+        operation_function.animate_marker_reconstruction(false,animate);
+        step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_animation_frame()));
+        image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_destination()));
+    }
 }
 
 void epolis::frame::main::animate_marker_reconstruction(wxTimerEvent &event) {
@@ -298,6 +317,10 @@ wxArrayString epolis::frame::main::get_operation_names() {
     }
 
     return operation_names;
+}
+
+void epolis::frame::main::on_toggle_animation(wxCommandEvent &event) {
+    animate = !animate;
 }
 
 void epolis::frame::main::on_save_image_button(const wxCommandEvent& event) {
