@@ -42,10 +42,12 @@ namespace epolis::utility {
                 animation_frame = marker_next_frame;
             }
             else {
-                cv::bitwise_and(marker_next_frame, input_image_binary, marker_animation_frame);
+                cv::bitwise_and(marker_next_frame, operation_image, marker_animation_frame);
                 animation_frame = marker_animation_frame;
                 if (!is_pixel_diff()) {
-                    cv::bitwise_xor(marker_animation_frame, input_image_binary, destination);
+                    cv::bitwise_xor(marker_animation_frame, operation_image, destination);
+                    marker_animation_frame = destination;
+                    cv::bitwise_or(input_image_binary, destination, result);
                     flag = true;
                     return true;
                 }
@@ -59,6 +61,7 @@ namespace epolis::utility {
             while (is_pixel_diff());
             cv::bitwise_xor(marker_animation_frame, operation_image, destination);
             animation_frame = marker_animation_frame;
+            cv::bitwise_or(input_image_binary, destination, result);
             flag = true;
             return true;
         }
@@ -75,9 +78,6 @@ namespace epolis::utility {
         is_pixel_diff(true);
 
         clean_borders(inverted_image, false);
-        animate_marker_reconstruction(false, false);
-
-        cv::bitwise_or(input_image_binary, destination, result);
 
     }
 
@@ -124,7 +124,7 @@ namespace epolis::utility {
         else {
             count = 0;
         }
-        if (changed_pixels == non_zero_count && count == 3) {
+        if (changed_pixels == non_zero_count && count == 6) {
             changed_pixels = 0;
             count = 0;
             return false;

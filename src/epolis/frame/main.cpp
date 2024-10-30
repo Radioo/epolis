@@ -274,8 +274,16 @@ void epolis::frame::main::on_fill_holes() {
 
     step_images["Step 1 Fill"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_input_image_binary())); //binaryzacja
     step_images["Step 2 Fill"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_inverted_image())); //negacja
-    step_images["Step 3 Fill"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_destination())); //markery
-    image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_result())); //wynik koncowy
+    step_images["Step 3 Fill"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_marker_animation_frame())); //markery
+
+    if (animate) {
+        timer.Start(timer_slider->GetValue(), wxTIMER_CONTINUOUS);
+    }
+    else {
+        operation_function.animate_marker_reconstruction(false,animate);
+        step_images["Step 3 Fill"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_destination()));
+        image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_result()));
+    }
 
     app_panel->Layout();
 }
@@ -301,12 +309,24 @@ void epolis::frame::main::on_clean_borders() {
 
 void epolis::frame::main::animate_marker_reconstruction(wxTimerEvent &event) {
     if(operation_function.animate_marker_reconstruction()) {
-        image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_destination()));
+        if (operation == "Clean borders") {
+            image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_destination()));
+            step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_animation_frame()));
+        }
+        else {
+            step_images["Step 3 Fill"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_destination()));
+            image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_result()));
+        }
         timer.Stop();
+        app_panel->Layout();
     }
 
-    step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_animation_frame()));
-    // app_panel->Layout();
+    if (operation == "Clean borders") {
+        step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_animation_frame()));
+    }
+    else {
+        step_images["Step 3 Fill"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_marker_animation_frame()));
+    }
 }
 
 wxArrayString epolis::frame::main::get_operation_names() {
