@@ -118,6 +118,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     outer_sizer->Add(top_menu_sizer, 0, wxEXPAND, 5);
     outer_sizer->Add(main_sizer, 0, wxEXPAND, 5);
 
+    wxTopLevelWindow::Maximize(true);
     initialise_layout();
 
     wxCommandEvent event(wxEVT_CHOICE, operation_choice->GetId());
