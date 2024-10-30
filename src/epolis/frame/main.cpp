@@ -302,6 +302,7 @@ void epolis::frame::main::on_fill_holes() {
 
 void epolis::frame::main::on_clean_borders() {
     timer.Stop();
+    operation_function.clear_marker_animation_frame();
     operation_function.animate_marker_reconstruction(morph_shape,true);
     operation_function.clean_borders(input_image);
 

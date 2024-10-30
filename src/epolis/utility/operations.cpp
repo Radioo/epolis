@@ -85,6 +85,11 @@ namespace epolis::utility {
         return marker_animation_frame;
     }
 
+    void operations::clear_marker_animation_frame() {
+        marker_animation_frame.release();
+    }
+
+
     cv::Mat operations::get_input_image_binary() {
         return input_image_binary;
     }
@@ -105,18 +110,18 @@ namespace epolis::utility {
         return inverted_image;
     }
 
+
     bool operations::is_pixel_diff(bool reset) {
         static int changed_pixels = 0;
         static int count = 0;
         cv::Mat difference;
-
         if (reset) {
             changed_pixels = 0;
             count = 0;
             return true;
         }
 
-        cv::absdiff(marker_next_frame, marker_animation_frame, difference);
+        cv::absdiff(marker_animation_frame, marker_next_frame, difference);
         int non_zero_count = cv::countNonZero(difference);
         if (changed_pixels == non_zero_count) {
             count++;
@@ -124,7 +129,7 @@ namespace epolis::utility {
         else {
             count = 0;
         }
-        if (changed_pixels == non_zero_count && count == 6) {
+        if (changed_pixels == non_zero_count && count == 30) {
             changed_pixels = 0;
             count = 0;
             return false;

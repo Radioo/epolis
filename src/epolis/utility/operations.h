@@ -9,6 +9,7 @@ namespace epolis::utility {
     public:
         void clean_borders(cv::Mat& input_image, bool convert_grayscale = true);
         void fill_holes(cv::Mat& input_image);
+        void clear_marker_animation_frame();
 
         bool animate_marker_reconstruction(cv::MorphShapes& shape, bool reset = false, bool animate = true);
 
