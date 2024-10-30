@@ -26,6 +26,7 @@ namespace epolis::frame {
             operations = 14,
             run_button = 15,
             toggle_animation = 16,
+            struct_shapes = 17,
         };
 
         wxPanel* app_panel;
@@ -53,6 +54,8 @@ namespace epolis::frame {
 
         wxTimer timer;
 
+        cv::MorphShapes morph_shape = cv::MORPH_RECT;
+
         bool animate = false;
 
         static wxBitmap get_empty_bitmap();
@@ -67,6 +70,7 @@ namespace epolis::frame {
         void on_clean_borders();
         wxArrayString get_operation_names();
         void on_toggle_animation(wxCommandEvent& event);
+        void on_change_struct_shape(const wxCommandEvent& event);
         void on_change_language(const wxCommandEvent& event);
         void on_change_operation(const wxCommandEvent& event);
         void on_load_image(const wxCommandEvent& event);

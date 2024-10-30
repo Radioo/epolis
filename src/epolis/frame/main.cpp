@@ -35,6 +35,12 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
         }}
     };
 
+    const wxArrayString struct_shapes = {
+        "Rectangle",
+        "Cross",
+        "Ellipse",
+    };
+
 
     auto* language_choice = new wxChoice(app_panel, static_cast<int>(menu_item::language), wxDefaultPosition, wxDefaultSize, languages, 0);
     add_choice(language_choice,languages);
@@ -45,6 +51,11 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     add_choice(operation_choice,get_operation_names());
     Bind(wxEVT_CHOICE, &main::on_change_operation, this, static_cast<int>(menu_item::operations));
     operation_choice->SetSelection(0);
+
+    auto* struct_shape_choice = new wxChoice(app_panel, static_cast<int>(menu_item::struct_shapes), wxDefaultPosition, wxDefaultSize, struct_shapes, 0);
+    add_choice(struct_shape_choice,struct_shapes);
+    Bind(wxEVT_CHOICE, &main::on_change_struct_shape, this, static_cast<int>(menu_item::struct_shapes));
+    struct_shape_choice->SetSelection(0);
 
     auto* load_image_1_button = new wxButton(app_panel, static_cast<int>(menu_item::load_image_1), "Load Image");
     add_button(load_image_1_button);
@@ -97,6 +108,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     button_hSizer->Add(language_choice, 0, wxTOP, 5);
     button_hSizer->Add(operation_choice, 0, wxALL, 5);
+    button_hSizer->Add(struct_shape_choice, 0, wxALL, 5);
     button_hSizer->Add(run_button, 0, wxALL, 5);
     button_hSizer->Add(slider_sizer, 0, wxALL, 5);
     top_menu_sizer->Add(load_image_1_button, 0, wxALL, 5);
@@ -205,7 +217,7 @@ void epolis::frame::main::initialise_layout() {
 
 void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
     timer.Stop();
-    operation_function.animate_marker_reconstruction(true);
+    operation_function.animate_marker_reconstruction(morph_shape,true);
     input_image.release();
     image_input_1->SetBitmap(get_empty_bitmap());
     image_output->SetBitmap(get_empty_bitmap());
@@ -269,7 +281,7 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
 }
 
 void epolis::frame::main::on_fill_holes() {
-    operation_function.animate_marker_reconstruction(true);
+    operation_function.animate_marker_reconstruction(morph_shape,true);
     operation_function.fill_holes(input_image);
 
     step_images["Step 1 Fill"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_input_image_binary())); //binaryzacja
@@ -280,7 +292,7 @@ void epolis::frame::main::on_fill_holes() {
         timer.Start(timer_slider->GetValue(), wxTIMER_CONTINUOUS);
     }
     else {
-        operation_function.animate_marker_reconstruction(false,animate);
+        operation_function.animate_marker_reconstruction(morph_shape,false,animate);
         step_images["Step 3 Fill"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_destination()));
         image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_result()));
     }
@@ -290,7 +302,7 @@ void epolis::frame::main::on_fill_holes() {
 
 void epolis::frame::main::on_clean_borders() {
     timer.Stop();
-    operation_function.animate_marker_reconstruction(true);
+    operation_function.animate_marker_reconstruction(morph_shape,true);
     operation_function.clean_borders(input_image);
 
     step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_marker_animation_frame()));
@@ -301,14 +313,14 @@ void epolis::frame::main::on_clean_borders() {
         timer.Start(timer_slider->GetValue(), wxTIMER_CONTINUOUS);
     }
     else {
-        operation_function.animate_marker_reconstruction(false,animate);
+        operation_function.animate_marker_reconstruction(morph_shape,false,animate);
         step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_animation_frame()));
         image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_destination()));
     }
 }
 
 void epolis::frame::main::animate_marker_reconstruction(wxTimerEvent &event) {
-    if(operation_function.animate_marker_reconstruction()) {
+    if(operation_function.animate_marker_reconstruction(morph_shape)) {
         if (operation == "Clean borders") {
             image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_destination()));
             step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_animation_frame()));
@@ -342,6 +354,24 @@ wxArrayString epolis::frame::main::get_operation_names() {
 void epolis::frame::main::on_toggle_animation(wxCommandEvent &event) {
     animate = !animate;
 }
+
+void epolis::frame::main::on_change_struct_shape(const wxCommandEvent &event) {
+    switch (event.GetSelection()) {
+        case 0:
+            morph_shape = cv::MORPH_RECT;
+        break;
+        case 1:
+            morph_shape = cv::MORPH_CROSS;
+        break;
+        case 2:
+            morph_shape = cv::MORPH_ELLIPSE;
+        break;
+        default:
+            wxLogWarning("Unknown selection.");
+        break;
+    }
+}
+
 
 void epolis::frame::main::on_save_image_button(const wxCommandEvent& event) {
     wxFileDialog saveFileDialog(this, "Save Image",

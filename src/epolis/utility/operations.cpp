@@ -22,13 +22,13 @@ namespace epolis::utility {
         is_pixel_diff(true);
     }
 
-    bool operations::animate_marker_reconstruction(bool reset, bool animate) {
+    bool operations::animate_marker_reconstruction(cv::MorphShapes& shape, bool reset, bool animate) {
         static bool flag = true;
         if (reset) {
             flag = true;
             return false;
         }
-        constexpr auto dilation_type = cv::MORPH_CROSS;
+        const auto dilation_type = shape;
         constexpr auto dilation_size = 1;
         const cv::Mat element = getStructuringElement(
             dilation_type,
