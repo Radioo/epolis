@@ -84,11 +84,13 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     top_sizer->Add(title_sizer, 1, wxCENTER, 5);
 
-    button_hSizer->Add(language_choice, 0, wxTOP, 5);
-    button_hSizer->Add(operation_choice, 0, wxALL, 5);
-    button_hSizer->Add(run_button, 0, wxALL, 5);
-    button_hSizer->Add(slider_sizer, 0, wxALL, 5);
     top_menu_sizer->Add(load_image_1_button, 0, wxALL, 5);
+    top_menu_sizer->Add(language_choice, 0, wxTOP, 5);
+    top_menu_sizer->Add(operation_choice, 0, wxALL, 5);
+    top_menu_sizer->Add(run_button, 0, wxALL, 5);
+    top_menu_sizer->Add(slider_sizer, 0, wxALL, 5);
+
+
     top_menu_sizer->AddStretchSpacer(1);
     top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
 
@@ -98,7 +100,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     main_left_sizer->AddStretchSpacer(1);
     main_left_sizer->Add(left_sizer, 1, wxEXPAND | wxALL, 5);
-    main_left_sizer->AddStretchSpacer(2);
+    main_left_sizer->AddStretchSpacer(1);
 
     main_sizer->Add(main_left_sizer, 1, wxEXPAND | wxALL, 5);
 
