@@ -8,6 +8,7 @@
 
 #include "epolis/text/dynamic_text.hpp"
 #include "epolis/utility/operations.h"
+#include "epolis/text/bitmap.h"
 
 class wxWrapSizer;
 
@@ -47,9 +48,13 @@ namespace epolis::frame {
         std::unordered_map<std::string, wxStaticBitmap*> step_images;
         std::unordered_map<std::string, wxBoxSizer*> box_map;
 
+        wxBitmapButton* bitmapButton;
+
         wxString operation;
 
         wxTimer timer;
+
+        text::bitmap language_bitmap;
 
         static wxBitmap get_empty_bitmap();
         static cv::Mat bitmap_to_mat(const wxStaticBitmap* image);
