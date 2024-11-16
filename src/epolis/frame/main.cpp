@@ -10,6 +10,8 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     app_panel->SetFont(app_panel->GetFont().Scale(SCALE));
 
+    app_panel->SetDoubleBuffered(true);
+
     auto* outer_sizer = new wxBoxSizer(wxVERTICAL);
     auto* top_sizer = new wxBoxSizer(wxVERTICAL);
     auto* top_menu_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -17,11 +19,6 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     auto* main_left_sizer = new wxBoxSizer(wxVERTICAL);
     auto* button_hSizer = new wxWrapSizer(wxHORIZONTAL);
     left_sizer = new wxBoxSizer(wxVERTICAL);
-
-    const wxArrayString languages = {
-        "English",
-        "Polish",
-    };
 
     operations = {
         {"Fill holes", {
@@ -35,16 +32,23 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
         }}
     };
 
+    language_bitmap.load_bitmap();
 
-    auto* language_choice = new wxChoice(app_panel, static_cast<int>(menu_item::language), wxDefaultPosition, wxDefaultSize, languages, 0);
-    add_choice(language_choice,languages);
-    Bind(wxEVT_CHOICE, &main::on_change_language, this, static_cast<int>(menu_item::language));
-    language_choice->SetSelection(0);
+    bitmapButton = new wxBitmapButton(app_panel, static_cast<int>(menu_item::language), language_bitmap.get_bitmap(0), wxDefaultPosition, wxDefaultSize);
+    Bind(wxEVT_BUTTON, &main::on_change_language, this, static_cast<int>(menu_item::language));
+
+    auto* operation_slider = new wxBoxSizer(wxHORIZONTAL);
+
+    auto* operation_text = new wxStaticText(app_panel, wxID_ANY, "Select operation");
+    add_static_text(operation_text);
 
     auto* operation_choice = new wxChoice(app_panel, static_cast<int>(menu_item::operations), wxDefaultPosition, wxDefaultSize, get_operation_names(), 0);
     add_choice(operation_choice,get_operation_names());
     Bind(wxEVT_CHOICE, &main::on_change_operation, this, static_cast<int>(menu_item::operations));
     operation_choice->SetSelection(0);
+
+    operation_slider->Add(operation_text, 0, wxALL, 5);
+    operation_slider->Add(operation_choice, 0, 0, 5);
 
     auto* load_image_1_button = new wxButton(app_panel, static_cast<int>(menu_item::load_image_1), "Load Image");
     add_button(load_image_1_button);
@@ -65,7 +69,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     timer_slider->SetTickFreq(10);
     timer_slider->Bind(wxEVT_SCROLL_CHANGED, &main::on_timer_slider, this);
 
-    slider_sizer->Add(slider_text, 0, 0, 5);
+    slider_sizer->Add(slider_text, 0, wxALL, 5);
     slider_sizer->Add(timer_slider, 0, 0, 5);
 
     auto* title_text = new wxStaticText(app_panel, wxID_ANY, "Morphological transformations");
@@ -84,11 +88,12 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     top_sizer->Add(title_sizer, 1, wxCENTER, 5);
 
+    top_menu_sizer->Add(bitmapButton, 0, wxALL, 5);
     top_menu_sizer->Add(load_image_1_button, 0, wxALL, 5);
-    top_menu_sizer->Add(language_choice, 0, wxTOP, 5);
-    top_menu_sizer->Add(operation_choice, 0, wxALL, 5);
-    top_menu_sizer->Add(run_button, 0, wxALL, 5);
+    top_menu_sizer->Add(operation_slider, 0, wxALL, 5);
     top_menu_sizer->Add(slider_sizer, 0, wxALL, 5);
+    top_menu_sizer->Add(run_button, 0, wxALL, 5);
+
 
 
     top_menu_sizer->AddStretchSpacer(1);
@@ -134,6 +139,8 @@ void epolis::frame::main::on_run_button(const wxCommandEvent& event) {
         return;
     }
 
+    app_panel->SetDoubleBuffered(false);
+
     image_output->SetBitmap(get_empty_bitmap());
     for (const auto& step : step_images) {
         step.second->SetBitmap(get_empty_bitmap());
@@ -158,8 +165,9 @@ void epolis::frame::main::on_timer_slider(const wxCommandEvent& event) {
 
 
 void epolis::frame::main::on_change_language(const wxCommandEvent& event) {
-    const auto lang = static_cast<text::lang>(event.GetSelection());
-    text::text::set_language(lang);
+    language_bitmap.change_language();
+    text::text::set_language(language_bitmap.get_lang());
+    bitmapButton->SetBitmap(language_bitmap.get_bitmap(static_cast<int>(language_bitmap.get_lang())));
     refresh_text();
     app_panel->Layout();
 }
@@ -231,8 +239,6 @@ void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
 }
 
 void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
-    const auto item = static_cast<menu_item>(event.GetId());
-
     auto* dialog = new wxFileDialog(
         this,
         "Select an image",
@@ -268,6 +274,7 @@ void epolis::frame::main::on_fill_holes() {
     step_images["Step 3 Fill"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_destination())); //markery
     image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_result())); //wynik koncowy
 
+    app_panel->SetDoubleBuffered(true);
     app_panel->Layout();
 }
 
@@ -287,6 +294,7 @@ void epolis::frame::main::animate_marker_reconstruction(wxTimerEvent &event) {
     if(operation_function.animate_marker_reconstruction()) {
         image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_destination()));
         timer.Stop();
+        app_panel->SetDoubleBuffered(true);
     }
 
     step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_animation_frame()));
