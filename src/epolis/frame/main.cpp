@@ -47,7 +47,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     Bind(wxEVT_CHOICE, &main::on_change_operation, this, static_cast<int>(menu_item::operations));
     operation_choice->SetSelection(0);
 
-    operation_slider->Add(operation_text, 0, 0, 5);
+    operation_slider->Add(operation_text, 0, wxALL, 5);
     operation_slider->Add(operation_choice, 0, 0, 5);
 
     auto* load_image_1_button = new wxButton(app_panel, static_cast<int>(menu_item::load_image_1), "Load Image");
@@ -69,7 +69,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     timer_slider->SetTickFreq(10);
     timer_slider->Bind(wxEVT_SCROLL_CHANGED, &main::on_timer_slider, this);
 
-    slider_sizer->Add(slider_text, 0, 0, 5);
+    slider_sizer->Add(slider_text, 0, wxALL, 5);
     slider_sizer->Add(timer_slider, 0, 0, 5);
 
     auto* title_text = new wxStaticText(app_panel, wxID_ANY, "Morphological transformations");
