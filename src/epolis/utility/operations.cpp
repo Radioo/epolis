@@ -1,4 +1,4 @@
-#include "epolis\utility\operations.h"
+#include "epolis/utility/operations.h"
 
 namespace epolis::utility {
     void operations::clean_borders(cv::Mat& input_image, bool convert_grayscale) {

@@ -5,6 +5,9 @@
 #include "epolis/text/text.hpp"
 #include "epolis/style.hpp"
 
+#include "epolis/frame/custom/triangle_slider.hpp"
+
+
 epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosition, wxSize(1280, 720)) {
     app_panel = new wxPanel(this, wxID_ANY);
 
@@ -65,12 +68,13 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     auto* slider_text = new wxStaticText(app_panel, wxID_ANY, "Animation speed");
     add_static_text(slider_text);
 
-    timer_slider = new wxSlider(app_panel, wxID_ANY, 0, 0, 100, wxDefaultPosition, wxSize(200, -1), wxSL_HORIZONTAL | wxSL_LABELS);
-    timer_slider->SetTickFreq(10);
-    timer_slider->Bind(wxEVT_SCROLL_CHANGED, &main::on_timer_slider, this);
+    timer_slider = new TriangularSlider(app_panel, wxID_ANY, 0, 0, 100, wxDefaultPosition, wxSize(200, 40));
+    timer_slider->Bind(wxEVT_TRIANGULAR_SLIDER_CHANGED, &main::on_timer_slider, this);
 
     slider_sizer->Add(slider_text, 0, wxALL, 5);
     slider_sizer->Add(timer_slider, 0, 0, 5);
+
+
 
     auto* title_text = new wxStaticText(app_panel, wxID_ANY, "Morphological transformations");
     add_static_text(title_text);
@@ -107,13 +111,13 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     main_left_sizer->Add(left_sizer, 1, wxEXPAND | wxALL, 5);
     main_left_sizer->AddStretchSpacer(1);
 
-    main_sizer->Add(main_left_sizer, 1, wxEXPAND | wxALL, 5);
+    main_sizer->Add(main_left_sizer, 0, wxEXPAND | wxALL, 15); //
 
     auto* main_right_sizer = new wxBoxSizer(wxVERTICAL);
     main_right_sizer->AddStretchSpacer(1);
-    main_right_sizer->Add(images_sizer, 1, wxEXPAND | wxALL, 5);
+    main_right_sizer->Add(images_sizer, 1, wxEXPAND | wxALL, 0);
     main_right_sizer->AddStretchSpacer(1);
-    main_sizer->Add(main_right_sizer, 1, wxEXPAND | wxALL, 5);
+    main_sizer->Add(main_right_sizer, 1, wxEXPAND | wxALL, 5); //
 
     app_panel->SetSizer(outer_sizer);
 

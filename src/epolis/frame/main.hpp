@@ -10,6 +10,8 @@
 #include "epolis/utility/operations.h"
 #include "epolis/text/bitmap.h"
 
+#include "epolis/frame/custom/triangle_slider.hpp"
+
 class wxWrapSizer;
 
 namespace epolis::frame {
@@ -30,7 +32,7 @@ namespace epolis::frame {
 
         wxPanel* app_panel;
         wxBoxSizer* left_sizer;
-        wxSlider* timer_slider;
+        TriangularSlider* timer_slider;
 
         cv::Mat input_image;
         cv::Mat input_image_binary;
