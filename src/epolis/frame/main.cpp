@@ -91,8 +91,8 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     top_menu_sizer->Add(bitmapButton, 0, wxALL, 5);
     top_menu_sizer->Add(load_image_1_button, 0, wxALL, 5);
     top_menu_sizer->Add(operation_slider, 0, wxALL, 5);
-    top_menu_sizer->Add(slider_sizer, 0, wxALL, 5);
     top_menu_sizer->Add(run_button, 0, wxALL, 5);
+    top_menu_sizer->Add(slider_sizer, 0, wxALL, 5);
 
 
 
@@ -205,12 +205,7 @@ void epolis::frame::main::initialise_layout() {
 void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
     timer.Stop();
     operation_function.animate_marker_reconstruction(true);
-    input_image.release();
-    image_input_1->SetBitmap(get_empty_bitmap());
-    image_output->SetBitmap(get_empty_bitmap());
-    for (const auto& box: step_images) {
-        box.second->SetBitmap(get_empty_bitmap());
-    }
+    clear_step_images();
     for (const auto& box: box_map) {
         box.second->Show(false);
     }
@@ -255,6 +250,8 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     const auto path = dialog->GetPath();
     input_image = imread(std::string(path), cv::IMREAD_COLOR);
 
+    clear_step_images();
+
     // Convert BGR to RGB
     cv::Mat rgb_image;
     cv::cvtColor(input_image, rgb_image, cv::COLOR_BGR2RGB);
@@ -288,6 +285,13 @@ void epolis::frame::main::on_clean_borders() {
     step_images["Step 1 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_input_image_binary())); // binaryzacja
     app_panel->Layout();
     timer.Start(timer_slider->GetValue(), wxTIMER_CONTINUOUS);
+}
+
+void epolis::frame::main::clear_step_images() {
+    for (const auto& box: step_images) {
+        box.second->SetBitmap(get_empty_bitmap());
+    }
+    image_output->SetBitmap(get_empty_bitmap());
 }
 
 void epolis::frame::main::animate_marker_reconstruction(wxTimerEvent &event) {

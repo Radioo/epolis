@@ -66,6 +66,7 @@ namespace epolis::frame {
         void animate_marker_reconstruction(wxTimerEvent& event);
         void on_fill_holes();
         void on_clean_borders();
+        void clear_step_images();
         wxArrayString get_operation_names();
         void on_change_language(const wxCommandEvent& event);
         void on_change_operation(const wxCommandEvent& event);
