@@ -18,6 +18,16 @@ namespace epolis::utility {
         cv::copyMakeBorder(cropped_image,padded_image, 1, 1, 1, 1, cv::BORDER_CONSTANT, cv::Scalar(0));
 
         cv::bitwise_xor(operation_image, padded_image, marker_animation_frame);
+        cv::Mat color_image = marker_animation_frame.clone();
+        cv::cvtColor(color_image, red_markers_image, cv::COLOR_GRAY2BGR);
+
+        for (int y = 0; y < color_image.rows; y++) {
+            for (int x = 0; x < color_image.cols; x++) {
+                if (color_image.at<uchar>(y, x) == 255) {
+                    red_markers_image.at<cv::Vec3b>(y, x) = cv::Vec3b(255, 0, 0);
+                }
+            }
+        }
 
         is_pixel_diff(true);
     }
@@ -39,11 +49,11 @@ namespace epolis::utility {
         if (animate) {
             if(flag) {
                 cv::dilate(marker_animation_frame, marker_next_frame, element);
-                animation_frame = marker_next_frame;
+                animation_frame = apply_mask(marker_next_frame);
             }
             else {
                 cv::bitwise_and(marker_next_frame, input_image_binary, marker_animation_frame);
-                animation_frame = marker_animation_frame;
+                animation_frame = apply_mask(marker_animation_frame);
                 if (!is_pixel_diff()) {
                     cv::bitwise_xor(marker_animation_frame, input_image_binary, destination);
                     flag = true;
@@ -52,6 +62,7 @@ namespace epolis::utility {
             }
         }
         else {
+            //brak red markerów dla wersji bez animacji
             do {
                 cv::dilate(marker_animation_frame, marker_next_frame, element);
                 cv::bitwise_and(marker_next_frame, operation_image, marker_animation_frame);
@@ -139,5 +150,15 @@ namespace epolis::utility {
         cvtColor(input_image, gray, cv::COLOR_BGR2GRAY);
 
         cv::threshold(gray,input_image_binary, 128, 255, cv::THRESH_OTSU);
+    }
+
+    cv::Mat operations::apply_mask(const cv::Mat& input_image) {
+        cv::Mat combined_image;
+        cv::cvtColor(input_image, combined_image, cv::COLOR_GRAY2BGR);
+
+        cv::Mat red_mask;
+        cv::inRange(red_markers_image, cv::Scalar(200, 0, 0), cv::Scalar(255, 50, 50), red_mask);
+        combined_image.setTo(cv::Scalar(255, 0, 0), red_mask);
+        return combined_image;
     }
 }

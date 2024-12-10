@@ -28,9 +28,12 @@ namespace epolis::utility {
         cv::Mat inverted_image;
         cv::Mat result;
         cv::Mat operation_image;
+        cv::Mat red_markers_image;
 
         bool is_pixel_diff(bool reset = false);
         void convert_to_grayscale(cv::Mat& input_image);
+
+        cv::Mat apply_mask(const cv::Mat& input_image);
     };
 }
 
