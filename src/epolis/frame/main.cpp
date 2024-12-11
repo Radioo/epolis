@@ -381,6 +381,8 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     is_running = false;
     operation_function.clear_buffer();
 
+    cv::resize(input_image, input_image, cv::Size(200, 200));  // resize 200x200
+
     // Convert BGR to RGB
     cv::Mat rgb_image;
     cv::cvtColor(input_image, rgb_image, cv::COLOR_BGR2RGB);
@@ -509,7 +511,7 @@ wxBitmap epolis::frame::main::mat_to_bitmap_greyscale(const cv::Mat& image) {
 }
 
 wxBitmap epolis::frame::main::get_empty_bitmap() {
-    auto bitmap = wxBitmap(256, 256);
+    auto bitmap = wxBitmap(200, 200);
     wxMemoryDC dc(bitmap);
     dc.SetBackground(*wxWHITE_BRUSH);
     dc.Clear();

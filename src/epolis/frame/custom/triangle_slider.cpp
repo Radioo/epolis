@@ -30,6 +30,7 @@ void TriangularSlider::OnPaint(wxPaintEvent& event) {
     wxAutoBufferedPaintDC dc(this);
     wxSize size = GetClientSize();
 
+    dc.Clear();
 
     double ratio = double(m_value - m_min) / (m_max - m_min);
     int fillWidth = static_cast<int>(ratio * size.x);
