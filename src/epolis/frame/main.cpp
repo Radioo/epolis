@@ -160,6 +160,30 @@ void epolis::frame::main::on_timer_slider(const wxCommandEvent& event) {
     }
 }
 
+void epolis::frame::main::on_previous_step(const wxCommandEvent &event) {
+}
+
+void epolis::frame::main::on_animation_pause(const wxCommandEvent &event) {
+    step_control_sizer->Detach(1);
+    stop_button->Show(false);
+    step_control_sizer->Insert(1,start_button,wxEXPAND, 5);
+    start_button->Show(true);
+
+    app_panel->Layout();
+}
+
+void epolis::frame::main::on_animation_resume(const wxCommandEvent &event) {
+    step_control_sizer->Detach(1);
+    start_button->Show(false);
+    step_control_sizer->Insert(1,stop_button,wxEXPAND, 5);
+    stop_button->Show(true);
+
+    app_panel->Layout();
+}
+
+void epolis::frame::main::on_next_step(const wxCommandEvent &event) {
+}
+
 
 void epolis::frame::main::on_change_language(const wxCommandEvent& event) {
     language_bitmap.change_language();
@@ -186,14 +210,45 @@ void epolis::frame::main::initialise_layout() {
     input_image_sizer->Add(image_input_1, 0, wxALIGN_CENTER_HORIZONTAL, 5);
     box_map["Input Image"] = input_image_sizer;
 
+    step_control_sizer = new wxBoxSizer(wxHORIZONTAL);
+
+    auto* previous_step_button = new wxButton(app_panel, static_cast<int>(menu_item::previous_step), "Previous step");
+    add_button(previous_step_button);
+    Bind(wxEVT_BUTTON, &main::on_previous_step, this, static_cast<int>(menu_item::previous_step));
+
+    stop_button = new wxButton(app_panel, static_cast<int>(menu_item::stop), "Pause");
+    add_button(stop_button);
+    Bind(wxEVT_BUTTON, &main::on_animation_pause, this, static_cast<int>(menu_item::stop));
+
+    start_button = new wxButton(app_panel, static_cast<int>(menu_item::start), "Start");
+    add_button(start_button);
+    Bind(wxEVT_BUTTON, &main::on_animation_resume, this, static_cast<int>(menu_item::start));
+    start_button->Show(false);
+
+    auto* next_step_button = new wxButton(app_panel, static_cast<int>(menu_item::next_step), "Next step");
+    add_button(next_step_button);
+    Bind(wxEVT_BUTTON, &main::on_next_step, this, static_cast<int>(menu_item::next_step));
+
+    step_control_sizer->Add(previous_step_button, 0, wxALL, 5);
+    step_control_sizer->Add(stop_button, 0, wxALL, 5);
+    step_control_sizer->Add(next_step_button, 0, wxALL, 5);
+
+
     for (const auto& operation : operations) {
         for (const auto& step: operation.second) {
             auto* step_image_sizer = new wxBoxSizer(wxVERTICAL);
+
             auto* step_image_title = new wxStaticText(app_panel, wxID_ANY, step.ToStdString());
             add_static_text(step_image_title);
+
             step_images[step.ToStdString()] = new wxStaticBitmap(app_panel, wxID_ANY, get_empty_bitmap());
+
             step_image_sizer->Add(step_image_title, 0, wxALIGN_CENTER_HORIZONTAL, 5);
             step_image_sizer->Add(step_images[step.ToStdString()], 0, wxALIGN_CENTER_HORIZONTAL, 5);
+            if(step.ToStdString() == "Step 2 Clean" ) {
+                step_image_sizer->Add(step_control_sizer, 0, wxALIGN_CENTER_HORIZONTAL, 5);
+            }
+
             box_map[step.ToStdString()] = step_image_sizer;
         }
     }

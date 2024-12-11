@@ -26,6 +26,10 @@ namespace epolis::frame {
             clear_borders = 12,
             operations = 14,
             run_button = 15,
+            previous_step = 16,
+            start = 17,
+            stop = 18,
+            next_step = 19,
         };
 
         bool initial_run;
@@ -34,6 +38,7 @@ namespace epolis::frame {
         wxBoxSizer* left_sizer;
         wxBoxSizer* top_menu_sizer;
         wxBoxSizer* slider_sizer;
+        wxBoxSizer* step_control_sizer;
         wxSlider* timer_slider;
 
         cv::Mat input_image;
@@ -54,6 +59,8 @@ namespace epolis::frame {
 
         wxBitmapButton* bitmapButton;
         wxButton* save_image_button;
+        wxButton* stop_button;
+        wxButton* start_button;
 
         wxString operation;
 
@@ -81,5 +88,9 @@ namespace epolis::frame {
         void on_save_image_button(const wxCommandEvent& event);
         void on_run_button(const wxCommandEvent& event);
         void on_timer_slider(const wxCommandEvent& event);
+        void on_previous_step(const wxCommandEvent& event);
+        void on_animation_pause(const wxCommandEvent& event);
+        void on_animation_resume(const wxCommandEvent& event);
+        void on_next_step(const wxCommandEvent& event);
     };
 }
