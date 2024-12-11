@@ -241,20 +241,26 @@ void epolis::frame::main::initialise_layout() {
 
     step_control_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-    auto* previous_step_button = new wxButton(app_panel, static_cast<int>(menu_item::previous_step), "Previous step");
+    auto* previous_step_button = new wxButton(app_panel, static_cast<int>(menu_item::previous_step), "Previous step", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+    wxFont font = previous_step_button->GetFont();
+    font.SetPointSize(BUTTON_FONT);
+    previous_step_button->SetFont(font);
     add_button(previous_step_button);
     Bind(wxEVT_BUTTON, &main::on_previous_step, this, static_cast<int>(menu_item::previous_step));
 
-    stop_button = new wxButton(app_panel, static_cast<int>(menu_item::stop), "Pause");
+    stop_button = new wxButton(app_panel, static_cast<int>(menu_item::stop), "Pause", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+    stop_button->SetFont(font);
     add_button(stop_button);
     Bind(wxEVT_BUTTON, &main::on_animation_pause, this, static_cast<int>(menu_item::stop));
 
-    start_button = new wxButton(app_panel, static_cast<int>(menu_item::start), "Start");
+    start_button = new wxButton(app_panel, static_cast<int>(menu_item::start), "Start", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+    start_button->SetFont(font);
     add_button(start_button);
     Bind(wxEVT_BUTTON, &main::on_animation_resume, this, static_cast<int>(menu_item::start));
     start_button->Show(false);
 
-    auto* next_step_button = new wxButton(app_panel, static_cast<int>(menu_item::next_step), "Next step");
+    auto* next_step_button = new wxButton(app_panel, static_cast<int>(menu_item::next_step), "Next step", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+    next_step_button->SetFont(font);
     add_button(next_step_button);
     Bind(wxEVT_BUTTON, &main::on_next_step, this, static_cast<int>(menu_item::next_step));
 
