@@ -18,7 +18,7 @@ TriangularSlider::TriangularSlider(wxWindow* parent, int id, int value, int minV
 }
 
 int TriangularSlider::GetValue() const {
-    return m_value;
+    return m_max - (m_value - m_min);
 }
 
 void TriangularSlider::SetValue(int value) {
