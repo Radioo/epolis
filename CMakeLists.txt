@@ -14,7 +14,8 @@ file(GLOB_RECURSE sources src/*.cpp)
 if(WIN32)
     add_executable(epolis WIN32 ${sources})
 else()
-    add_executable(epolis ${sources})
+    add_executable(epolis ${sources}
+            src/epolis/frame/custom/triangle_slider.cpp)
 endif()
 target_include_directories(epolis PRIVATE
         src
