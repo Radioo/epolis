@@ -37,6 +37,7 @@ namespace epolis::utility {
         if (reset) {
             flag = true;
             return false;
+            iteration = 0;
         }
         constexpr auto dilation_type = cv::MORPH_CROSS;
         constexpr auto dilation_size = 1;
@@ -50,10 +51,14 @@ namespace epolis::utility {
             if(flag) {
                 cv::dilate(marker_animation_frame, marker_next_frame, element);
                 animation_frame = apply_mask(marker_next_frame);
+                imageBuffer.push_back(animation_frame.clone());
+
             }
             else {
                 cv::bitwise_and(marker_next_frame, input_image_binary, marker_animation_frame);
                 animation_frame = apply_mask(marker_animation_frame);
+                imageBuffer.push_back(animation_frame.clone());
+
                 if (!is_pixel_diff()) {
                     cv::bitwise_xor(marker_animation_frame, input_image_binary, destination);
                     flag = true;
@@ -75,6 +80,12 @@ namespace epolis::utility {
         }
         flag = !flag;
 
+        if(imageBuffer.size() < MAX_BUFFER_SIZE) {
+            iteration++;
+        }
+        if (imageBuffer.size() > MAX_BUFFER_SIZE) {
+            imageBuffer.pop_front();
+        }
         return false;
     }
 
@@ -90,6 +101,11 @@ namespace epolis::utility {
 
         cv::bitwise_or(input_image_binary, destination, result);
 
+    }
+
+    void operations::clear_buffer() {
+        imageBuffer.clear();
+        iteration=0;
     }
 
     cv::Mat operations::get_marker_animation_frame() {
@@ -114,6 +130,16 @@ namespace epolis::utility {
 
     cv::Mat operations::get_inverted_image() {
         return inverted_image;
+    }
+
+    cv::Mat operations::get_previous_image() {
+        if(iteration > 0) {
+            marker_animation_frame = convert_to_binary(imageBuffer[iteration-1]);
+            marker_next_frame = convert_to_binary(imageBuffer[iteration-1]);
+            imageBuffer.pop_back();
+            iteration--;
+        }
+        return apply_mask(marker_next_frame);
     }
 
     bool operations::is_pixel_diff(bool reset) {
@@ -150,6 +176,15 @@ namespace epolis::utility {
         cvtColor(input_image, gray, cv::COLOR_BGR2GRAY);
 
         cv::threshold(gray,input_image_binary, 128, 255, cv::THRESH_OTSU);
+    }
+
+    cv::Mat operations::convert_to_binary(cv::Mat &input_image) {
+        cv::Mat gray,binary;
+
+        cvtColor(input_image, gray, cv::COLOR_BGR2GRAY);
+
+        cv::threshold(gray,binary, 128, 255, cv::THRESH_OTSU);
+        return binary;
     }
 
     cv::Mat operations::apply_mask(const cv::Mat& input_image) {

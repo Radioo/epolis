@@ -148,6 +148,9 @@ void epolis::frame::main::on_run_button(const wxCommandEvent& event) {
     } else if (operation == "Fill holes") {
         on_fill_holes();
     }
+    pause = false;
+    is_running = true;
+    operation_function.clear_buffer();
 
     app_panel->Layout();
 }
@@ -161,27 +164,52 @@ void epolis::frame::main::on_timer_slider(const wxCommandEvent& event) {
 }
 
 void epolis::frame::main::on_previous_step(const wxCommandEvent &event) {
+    if(pause && is_running) {
+        step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_previous_image()));
+    }
+    else {
+        wxCommandEvent dummyEvent(wxEVT_BUTTON, static_cast<int>(menu_item::stop));
+        on_animation_pause(dummyEvent);
+    }
 }
 
 void epolis::frame::main::on_animation_pause(const wxCommandEvent &event) {
-    step_control_sizer->Detach(1);
-    stop_button->Show(false);
-    step_control_sizer->Insert(1,start_button,wxEXPAND, 5);
-    start_button->Show(true);
+    if(is_running) {
+        step_control_sizer->Detach(1);
+        stop_button->Show(false);
+        step_control_sizer->Insert(1,start_button,wxEXPAND, 5);
+        start_button->Show(true);
+        timer.Stop();
+        pause = true;
 
-    app_panel->Layout();
+        app_panel->Layout();
+    }
 }
 
 void epolis::frame::main::on_animation_resume(const wxCommandEvent &event) {
-    step_control_sizer->Detach(1);
-    start_button->Show(false);
-    step_control_sizer->Insert(1,stop_button,wxEXPAND, 5);
-    stop_button->Show(true);
+    if(is_running) {
+        step_control_sizer->Detach(1);
+        start_button->Show(false);
+        step_control_sizer->Insert(1,stop_button,wxEXPAND, 5);
+        stop_button->Show(true);
+        timer.Start(timer_slider->GetValue(), wxTIMER_CONTINUOUS);
+        pause = false;
 
-    app_panel->Layout();
+        app_panel->Layout();
+    }
 }
 
 void epolis::frame::main::on_next_step(const wxCommandEvent &event) {
+    if(pause && is_running) {
+        if(operation_function.animate_marker_reconstruction()) {
+            image_output->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_destination()));
+        }
+        step_images["Step 2 Clean"]->SetBitmap(mat_to_bitmap_greyscale(operation_function.get_animation_frame()));
+    }
+    else {
+        wxCommandEvent dummyEvent(wxEVT_BUTTON, static_cast<int>(menu_item::stop));
+        on_animation_pause(dummyEvent);
+    }
 }
 
 
@@ -201,6 +229,7 @@ void epolis::frame::main::initialise_layout() {
     save_image_button->Show(true);
 
     initial_run = true;
+    is_running = false;
 
     auto* input_image_sizer = new wxBoxSizer(wxVERTICAL);
     auto* input_image_title = new wxStaticText(app_panel, wxID_ANY, "Input Image");
@@ -289,6 +318,11 @@ void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
          top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
          slider_sizer->Show(true);
          save_image_button->Show(true);
+
+        step_control_sizer->Detach(1);
+        start_button->Show(false);
+        step_control_sizer->Insert(1,stop_button,wxEXPAND, 5);
+        stop_button->Show(true);
     }
     else if(operation == "Fill holes" && !initial_run && operation != last_operation) {
         top_menu_sizer->Detach(slider_sizer);
@@ -307,6 +341,10 @@ void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
     }
     images_sizer->Add(box_map["Output"], 1, wxALL | wxEXPAND, 5);
     box_map["Output"]->Show(true);
+
+    pause = false;
+    is_running = false;
+    operation_function.clear_buffer();
 
     refresh_text();
     app_panel->Layout();
@@ -330,6 +368,8 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     input_image = imread(std::string(path), cv::IMREAD_COLOR);
 
     clear_step_images();
+    is_running = false;
+    operation_function.clear_buffer();
 
     // Convert BGR to RGB
     cv::Mat rgb_image;

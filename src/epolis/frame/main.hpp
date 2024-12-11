@@ -33,6 +33,8 @@ namespace epolis::frame {
         };
 
         bool initial_run;
+        bool pause;
+        bool is_running;
 
         wxPanel* app_panel;
         wxBoxSizer* left_sizer;
