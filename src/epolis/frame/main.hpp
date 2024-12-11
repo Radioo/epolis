@@ -28,8 +28,12 @@ namespace epolis::frame {
             run_button = 15,
         };
 
+        bool initial_run;
+
         wxPanel* app_panel;
         wxBoxSizer* left_sizer;
+        wxBoxSizer* top_menu_sizer;
+        wxBoxSizer* slider_sizer;
         wxSlider* timer_slider;
 
         cv::Mat input_image;
@@ -49,6 +53,7 @@ namespace epolis::frame {
         std::unordered_map<std::string, wxBoxSizer*> box_map;
 
         wxBitmapButton* bitmapButton;
+        wxButton* save_image_button;
 
         wxString operation;
 

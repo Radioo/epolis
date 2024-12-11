@@ -14,11 +14,11 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     auto* outer_sizer = new wxBoxSizer(wxVERTICAL);
     auto* top_sizer = new wxBoxSizer(wxVERTICAL);
-    auto* top_menu_sizer = new wxBoxSizer(wxHORIZONTAL);
     auto* main_sizer = new wxBoxSizer(wxHORIZONTAL);
     auto* main_left_sizer = new wxBoxSizer(wxVERTICAL);
     auto* button_hSizer = new wxWrapSizer(wxHORIZONTAL);
     left_sizer = new wxBoxSizer(wxVERTICAL);
+    top_menu_sizer = new wxBoxSizer(wxHORIZONTAL);
 
     operations = {
         {"Fill holes", {
@@ -60,7 +60,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     add_button(run_button);
     Bind(wxEVT_BUTTON, &main::on_run_button, this, static_cast<int>(menu_item::run_button));
 
-    auto* slider_sizer = new wxBoxSizer(wxHORIZONTAL);
+    slider_sizer = new wxBoxSizer(wxHORIZONTAL);
 
     auto* slider_text = new wxStaticText(app_panel, wxID_ANY, "Animation speed");
     add_static_text(slider_text);
@@ -71,6 +71,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     slider_sizer->Add(slider_text, 0, wxALL, 5);
     slider_sizer->Add(timer_slider, 0, 0, 5);
+    slider_sizer->Show(false);
 
     auto* title_text = new wxStaticText(app_panel, wxID_ANY, "Morphological transformations");
     add_static_text(title_text);
@@ -80,10 +81,11 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
 
     title_sizer->Add(title_text, 0, wxALIGN_CENTER_HORIZONTAL, 5);
 
-    auto* save_image_button = new wxButton(app_panel, static_cast<int>(menu_item::save_right_image_button), "Save image");
+    save_image_button = new wxButton(app_panel, static_cast<int>(menu_item::save_right_image_button), "Save image");
     add_button(save_image_button);
     Bind(wxEVT_BUTTON, &main::on_save_image_button, this, static_cast<int>(menu_item::save_right_image_button));
     Bind(wxEVT_TIMER, &main::animate_marker_reconstruction, this);
+    save_image_button->Show(false);
 
 
     top_sizer->Add(title_sizer, 1, wxCENTER, 5);
@@ -92,12 +94,7 @@ epolis::frame::main::main(): wxFrame(nullptr, wxID_ANY, "EPOLIS", wxDefaultPosit
     top_menu_sizer->Add(load_image_1_button, 0, wxALL, 5);
     top_menu_sizer->Add(operation_slider, 0, wxALL, 5);
     top_menu_sizer->Add(run_button, 0, wxALL, 5);
-    top_menu_sizer->Add(slider_sizer, 0, wxALL, 5);
 
-
-
-    top_menu_sizer->AddStretchSpacer(1);
-    top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
 
     main_left_sizer->Add(button_hSizer, 0, wxALL, 0);
 
@@ -173,6 +170,14 @@ void epolis::frame::main::on_change_language(const wxCommandEvent& event) {
 }
 
 void epolis::frame::main::initialise_layout() {
+    top_menu_sizer->Add(slider_sizer, 0, wxALL, 5);
+    top_menu_sizer->AddStretchSpacer(1);
+    top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
+    slider_sizer->Show(true);
+    save_image_button->Show(true);
+
+    initial_run = true;
+
     auto* input_image_sizer = new wxBoxSizer(wxVERTICAL);
     auto* input_image_title = new wxStaticText(app_panel, wxID_ANY, "Input Image");
     add_static_text(input_image_title);
@@ -219,6 +224,25 @@ void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
     }
 
     operation = get_operation_names().Item(event.GetSelection());
+    static wxString last_operation = "";
+
+    if(operation == "Clean borders" && !initial_run && operation != last_operation) {
+        top_menu_sizer->Remove(4);
+        top_menu_sizer->Detach(save_image_button);
+         top_menu_sizer->Add(slider_sizer, 0, wxALL, 5);
+         top_menu_sizer->AddStretchSpacer(1);
+         top_menu_sizer->Add(save_image_button, 0, wxALL, 5);
+         slider_sizer->Show(true);
+         save_image_button->Show(true);
+    }
+    else if(operation == "Fill holes" && !initial_run && operation != last_operation) {
+        top_menu_sizer->Detach(slider_sizer);
+        slider_sizer->Show(false);
+    }
+    else {
+        initial_run = false;
+    }
+    last_operation = operation;
 
     left_sizer->Add(box_map["Input Image"], 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
     box_map["Input Image"]->Show(true);
