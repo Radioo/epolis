@@ -131,6 +131,7 @@ void epolis::frame::main::on_change_operation(const wxCommandEvent& event) {
 
     layout.refresh_text();
     app_panel->Layout();
+    app_panel->Layout();
 }
 
 void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
@@ -164,6 +165,8 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
 
     const wxImage wx_image(rgb_image.cols, rgb_image.rows, rgb_image.data, true);
     layout.on_load_image(wx_image);
+    is_running = false;
+    pause = false;
 
     app_panel->Layout();
 }

@@ -36,7 +36,6 @@ namespace epolis::utility {
         std::unordered_map<std::string, wxStaticBitmap*>& get_step_images();
     private:
         bool initial_run;
-        bool pause;
         bool is_running;
 
         wxString operation;
