@@ -118,7 +118,6 @@ namespace epolis::utility {
         save_image_button->Show(true);
 
         initial_run = true;
-        is_running = false;
 
         auto* input_image_sizer = new wxBoxSizer(wxVERTICAL);
         auto* input_image_title = new wxStaticText(panel, wxID_ANY, "Input Image");
@@ -222,14 +221,15 @@ namespace epolis::utility {
     }
     last_operation = operation;
 
-    left_sizer->Add(box_map["Input Image"], 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
-    box_map["Input Image"]->Show(true);
+        //left_sizer->Add(box_map["Input Image"], 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+        images_sizer->Add(box_map["Input Image"], 1, wxALL | wxEXPAND, 5);
+        box_map["Input Image"]->Show(true);
     for (const auto& step : operations[operation]) {
         images_sizer->Add(box_map[step.ToStdString()], 1, wxALL | wxEXPAND, 5);
         box_map[step.ToStdString()]->Show(true);
     }
-    images_sizer->Add(box_map["Output"], 1, wxALL | wxEXPAND, 5);
-    box_map["Output"]->Show(true);
+        images_sizer->Add(box_map["Output"], 1, wxALL | wxEXPAND, 5);
+        box_map["Output"]->Show(true);
     }
 
     void layout::on_animation_pause() {
@@ -296,6 +296,7 @@ namespace epolis::utility {
     void layout::on_load_image(const wxImage& input_image) {
         clear_step_images();
         image_input_1->SetBitmap(wxBitmap(input_image));
+        on_animation_resume();
     }
 
     TriangularSlider* layout::get_timer_slider() {
