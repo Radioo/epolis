@@ -253,6 +253,8 @@ namespace epolis::utility {
         for (const auto& step : step_images) {
             step.second->SetBitmap(get_empty_bitmap());
         }
+        if(operation == "Clean borders")
+            on_animation_resume();
 
         return operation;
     }
