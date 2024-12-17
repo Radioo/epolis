@@ -7,8 +7,8 @@ Polish,Polish,Polski
 Input Image,Input image,Obraz źródłowy
 Step 1 Fill,Binary Image,Obraz binarny
 Step 2 Fill,Negation,Negacja
-Step 3 Fill,Border clearing,Czyszczenie brzegu
-Step 4 Fill,Border clearing,Czyszczenie brzegu
+Step 3 Fill,Border cleaning,Czyszczenie brzegu
+Step 4 Fill,Border cleaning,Czyszczenie brzegu
 Step 2 Clean,Marker reconstruction,Rekonstrukcja markerów
 Step 3 Clean,Border cleaning,Czyszczenie brzegu
 Step 1 Clean,Binary Image,Obraz binarny

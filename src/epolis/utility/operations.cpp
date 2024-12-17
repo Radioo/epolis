@@ -21,15 +21,17 @@ namespace epolis::utility {
         cv::Mat color_image = marker_animation_frame.clone();
         cv::cvtColor(color_image, red_markers_image, cv::COLOR_GRAY2BGR);
 
+        is_pixel_diff(true);
+
+
         for (int y = 0; y < color_image.rows; y++) {
             for (int x = 0; x < color_image.cols; x++) {
                 if (color_image.at<uchar>(y, x) == 255) {
                     red_markers_image.at<cv::Vec3b>(y, x) = cv::Vec3b(255, 0, 0);
+                    red_border++;
                 }
             }
         }
-
-        is_pixel_diff(true);
     }
 
     bool operations::animate_marker_reconstruction(bool reset, bool animate) {
@@ -145,23 +147,32 @@ namespace epolis::utility {
     bool operations::is_pixel_diff(bool reset) {
         static int changed_pixels = 0;
         static int count = 0;
+        static bool first_change = false;
         cv::Mat difference;
 
         if (reset) {
             changed_pixels = 0;
             count = 0;
+            first_change = false;
+            red_border = 0;
             return true;
         }
 
         cv::absdiff(marker_next_frame, marker_animation_frame, difference);
         int non_zero_count = cv::countNonZero(difference);
-        if (changed_pixels == non_zero_count) {
+        if (changed_pixels == non_zero_count ) {
             count++;
         }
         else {
             count = 0;
+            first_change = true;
         }
-        if (changed_pixels == non_zero_count && count == 3) {
+        if (changed_pixels == non_zero_count && count == 3 && first_change) {
+            changed_pixels = 0;
+            count = 0;
+            return false;
+        }
+        if(red_border == 0) {
             changed_pixels = 0;
             count = 0;
             return false;
