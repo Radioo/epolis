@@ -38,6 +38,7 @@ namespace epolis::utility {
         std::deque<cv::Mat> imageBuffer;
 
         int iteration = 0;
+        int red_border = 0;
 
         bool is_pixel_diff(bool reset = false);
         void convert_to_grayscale(cv::Mat& input_image);

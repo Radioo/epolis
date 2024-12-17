@@ -167,6 +167,7 @@ void epolis::frame::main::on_load_image(const wxCommandEvent& event) {
     layout.on_load_image(wx_image);
     is_running = false;
     pause = false;
+    timer.Stop();
 
     app_panel->Layout();
 }
