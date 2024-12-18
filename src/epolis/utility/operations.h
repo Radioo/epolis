@@ -5,7 +5,7 @@
 #include <wx/wx.h>
 #include <deque>
 
-constexpr size_t MAX_BUFFER_SIZE = 20;
+constexpr size_t MAX_BUFFER_SIZE = 100;
 
 namespace epolis::utility {
     class operations {
